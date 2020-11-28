@@ -12,6 +12,7 @@ fun myPlayerId() = playerView.myId
 
 fun currentTick(): Int = playerView.currentTick
 
+//---------------------------------------
 
 fun entities(): Sequence<Entity> = playerView.entities.asSequence()
 
@@ -30,3 +31,9 @@ fun myBuildings(type: EntityType? = null) = myEntities(type).filter { buildingTy
 fun myWorkers() = myUnits(BUILDER_UNIT)
 
 fun resources(): List<Entity> = playerView.entities.filter { it.entityType == RESOURCE }
+
+fun myArmy() = myUnits().filter { it.entityType == RANGED_UNIT || it.entityType == MELEE_UNIT }
+
+//--------------------------------------------------------
+
+fun availableResources() = playerView.players.asSequence().first { it.id == myPlayerId() }.resource

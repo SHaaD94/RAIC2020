@@ -1,7 +1,6 @@
 import impl.*
 import impl.global.State
 import impl.global.State.availableSupply
-import impl.global.entityStats
 import impl.global.initEntityStats
 import impl.util.*
 import impl.util.algo.distance
@@ -52,7 +51,7 @@ class MyStrategy {
 
     private fun buildSupply(resActions: MutableMap<Int, EntityAction>) {
         val supplyPos: Vec2Int
-        val supplySize = entityStats[EntityType.HOUSE]!!.size
+        val supplySize = EntityType.HOUSE.size()
         var xMax = 0
         var yMax = 0
         outer@ while (true) {
@@ -88,12 +87,11 @@ class MyStrategy {
             yMax += 1
         }
 
-        println(supplyPos)
-        val position = supplyPos
+        println("Supply position $supplyPos")
         val worker = myWorkers().filter {
             !intersects(supplyPos, supplySize, it.position, it.size())
-        }.minByOrNull { it.distance(position) }!!
-        resActions[worker.id] = constructBuilding(worker, EntityType.HOUSE, position)
+        }.minByOrNull { it.distance(supplyPos) }!!
+        resActions[worker.id] = constructBuilding(worker, EntityType.HOUSE, supplyPos)
     }
 
     fun debugUpdate(playerView: PlayerView, debugInterface: DebugInterface) {

@@ -9,7 +9,6 @@ import model.size
 fun cellsAround(e: Entity) = cellsAround(e.entityType, e.position)
 
 fun cellsAround(type: EntityType, pos: Vec2Int): Set<Vec2Int> {
-    //TODO check of outer bounds, and intersection with entities
     return (0 until type.size()).asSequence().flatMap { i ->
         sequenceOf(
             pos.copy(x = pos.x - 1, y = pos.y + i),

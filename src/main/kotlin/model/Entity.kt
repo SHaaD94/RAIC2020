@@ -77,7 +77,6 @@ class Entity {
     fun size() = entityStats[entityType]!!.size
 
     fun intersects(e: Entity): Boolean {
-
         val e1Size = entityStats[this.entityType]!!.size
         val e2Size = entityStats[e.entityType]!!.size
 
