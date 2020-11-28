@@ -14,7 +14,8 @@ fun moveAction(target: Vec2Int) = EntityAction(
 fun buildUnit(builder: Entity, unitType: EntityType): EntityAction {
     return EntityAction(
         buildAction = BuildAction(
-            unitType, cellsAround(builder).first()
+            unitType, cellsAround(builder)
+                .first { !cellOccupied(it.x, it.y) }
         )
     )
 }

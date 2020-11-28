@@ -61,7 +61,8 @@ class MyStrategy {
                     intersects(
                         x, x + supplySize,
                         yMax, yMax + supplySize,
-                        it.position, it.size() + 1
+                        if (it.isBuilding()) it.position - 1 else it.position,
+                        if (it.isBuilding()) it.size() + 2 else it.size()
                     )
                 }
                 if (noCollisions) {
@@ -74,7 +75,8 @@ class MyStrategy {
                     intersects(
                         xMax, xMax + supplySize,
                         y, y + supplySize,
-                        it.position, it.size()
+                        if (it.isBuilding()) it.position - 1 else it.position,
+                        if (it.isBuilding()) it.size() + 2 else it.size()
                     )
                 }
                 if (noCollisions) {

@@ -17,9 +17,11 @@ object State {
 
         this.playerView = playerView
 
-        this.availableSupply = myEntities().map {
-            val eInfo = entityStats[it.entityType]!!
-            eInfo.populationProvide - eInfo.populationUse
-        }.sum()
+        this.availableSupply = myEntities()
+            .filter { it.active }
+            .map {
+                val eInfo = entityStats[it.entityType]!!
+                eInfo.populationProvide - eInfo.populationUse
+            }.sum()
     }
 }

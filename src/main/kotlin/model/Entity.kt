@@ -1,5 +1,6 @@
 package model
 
+import impl.buildingTypes
 import impl.global.entityStats
 import util.StreamUtil
 
@@ -84,6 +85,8 @@ class Entity {
     }
 
     fun maxHP() = this.entityType.maxHP()
+
+    fun isBuilding() = buildingTypes.contains(this.entityType)
 }
 
 
