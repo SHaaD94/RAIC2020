@@ -23,17 +23,14 @@ class MyStrategy {
 
         resActions.putAll(repairBuildings())
 
+        fun produceUnit(builder: EntityType, unit: EntityType) =
+            myBuildings(builder).map { it.id to buildUnit(it, unit) }.toMap()
+
         fun produce(e: EntityType) = when (e) {
 //            EntityType.HOUSE -> buildSupply()
-            EntityType.MELEE_UNIT -> myBuildings(EntityType.MELEE_BASE).map {
-                it.id to buildUnit(it, EntityType.MELEE_UNIT)
-            }.toMap()
-            EntityType.RANGED_UNIT -> myBuildings(EntityType.RANGED_BASE).map {
-                it.id to buildUnit(it, EntityType.RANGED_UNIT)
-            }.toMap()
-            EntityType.BUILDER_UNIT -> myBuildings(EntityType.BUILDER_BASE).map {
-                it.id to buildUnit(it, EntityType.BUILDER_UNIT)
-            }.toMap()
+            EntityType.MELEE_UNIT -> produceUnit(EntityType.MELEE_BASE, EntityType.MELEE_UNIT)
+            EntityType.RANGED_UNIT -> produceUnit(EntityType.RANGED_BASE, EntityType.RANGED_UNIT)
+            EntityType.BUILDER_UNIT -> produceUnit(EntityType.BUILDER_BASE, EntityType.BUILDER_UNIT)
             else -> mapOf()
         }
 
@@ -49,6 +46,14 @@ class MyStrategy {
         if (availableSupply < 5) {
             resActions.putAll(buildSupply())
         }
+
+        resActions.putAll(
+            myArmy().map { u ->
+                val closesEnemy = enemies().map { it to it.distance(u.position) }.filter { it.second < 30.0 }
+                    .minByOrNull { it.second }?.first
+                u.id to if (closesEnemy == null) moveAction(Vec2Int(20, 20)) else attackAction(closesEnemy)
+            }
+        )
 
         return Action(resActions)
     }

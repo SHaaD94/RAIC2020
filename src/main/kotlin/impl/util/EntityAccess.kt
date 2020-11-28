@@ -34,6 +34,8 @@ fun resources(): List<Entity> = playerView.entities.filter { it.entityType == RE
 
 fun myArmy() = myUnits().filter { it.entityType == RANGED_UNIT || it.entityType == MELEE_UNIT }
 
+fun enemies() = entities().filter { it.playerId != null && it.playerId != myPlayerId() }
+
 //--------------------------------------------------------
 
 fun availableResources() = playerView.players.asSequence().first { it.id == myPlayerId() }.resource

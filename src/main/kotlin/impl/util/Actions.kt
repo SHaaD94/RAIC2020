@@ -8,7 +8,7 @@ fun attackAction(target: Entity) = EntityAction(
 )
 
 fun moveAction(target: Vec2Int) = EntityAction(
-    moveAction = MoveAction(target, false, true)
+    moveAction = MoveAction(target, false, false)
 )
 
 fun buildUnit(builder: Entity, unitType: EntityType): EntityAction {
