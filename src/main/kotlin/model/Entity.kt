@@ -82,6 +82,8 @@ class Entity {
 
         return impl.util.intersects(this.position, e1Size, e.position, e2Size)
     }
+
+    fun maxHP() = this.entityType.maxHP()
 }
 
 

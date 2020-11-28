@@ -19,6 +19,20 @@ fun buildUnit(builder: Entity, unitType: EntityType): EntityAction {
     )
 }
 
+fun repairAction(worker: Entity, target: Entity): EntityAction {
+    val borderCells = cellsAround(target)
+    // if builder is on one of them repair
+    return if (borderCells.contains(worker.position)) EntityAction(
+        repairAction = RepairAction(target.id)
+        // otherwise go to the neares one
+    ) else EntityAction(
+        moveAction = MoveAction(
+            borderCells.minByOrNull { it.distance(worker.position) }!!, false, true
+        )
+    )
+
+}
+
 fun constructBuilding(worker: Entity, type: EntityType, pos: Vec2Int): EntityAction {
     //find border points
     val borderCells = cellsAround(type, pos)

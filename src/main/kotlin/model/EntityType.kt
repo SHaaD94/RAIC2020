@@ -16,4 +16,5 @@ enum class EntityType(var tag: Int) {
 }
 
 fun EntityType.size() = entityStats[this]!!.size
+fun EntityType.maxHP() = entityStats[this]!!.maxHealth
 

@@ -3,13 +3,9 @@ import impl.global.State
 import impl.global.State.availableSupply
 import impl.global.entityStats
 import impl.global.initEntityStats
+import impl.util.*
 import impl.util.algo.distance
-import impl.util.buildUnit
-import impl.util.attackAction
-import impl.util.constructBuilding
-import impl.util.intersects
 import model.*
-import kotlin.math.roundToInt
 
 class MyStrategy {
     fun getAction(playerView: PlayerView, debugInterface: DebugInterface?): Action {
@@ -18,21 +14,15 @@ class MyStrategy {
 
         val resActions = mutableMapOf<Int, EntityAction>()
 
-        if (currentTick() % 5 == 0) {
-            val gatherResources: Map<Int, EntityAction> =
-                myWorkers().map { w -> w to resources().minByOrNull { w.distance(it) }!! }
-                    .map { (w, r) -> w.id to attackAction(r) }
-                    .toMap()
+        val gatherResources: Map<Int, EntityAction> = assignWorkersResources()
 
+        resActions.putAll(gatherResources)
 
-            resActions.putAll(gatherResources)
-        }
+        resActions.putAll(buildWorkers())
 
-        val buildWorkers = myBuildings(EntityType.BUILDER_BASE).map {
-            it.id to buildUnit(it, EntityType.BUILDER_UNIT)
-        }.toMap()
-        resActions.putAll(buildWorkers)
+        resActions.putAll(buildRanges())
 
+        resActions.putAll(repairBuildings())
 
         println("Supply $availableSupply")
         if (availableSupply < 5) {
@@ -41,6 +31,24 @@ class MyStrategy {
 
         return Action(resActions)
     }
+
+    private fun repairBuildings(): Map<Int, EntityAction> =
+        myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
+            myWorkers().sortedBy { it.distance(b) }.take(2).map { it.id to repairAction(it, b) }
+        }.toMap()
+
+    private fun buildWorkers(): Map<Int, EntityAction> = myBuildings(EntityType.BUILDER_BASE).map {
+        it.id to buildUnit(it, EntityType.BUILDER_UNIT)
+    }.toMap()
+
+    private fun buildRanges(): Map<Int, EntityAction> = myBuildings(EntityType.RANGED_BASE).map {
+        it.id to buildUnit(it, EntityType.RANGED_UNIT)
+    }.toMap()
+
+    private fun assignWorkersResources(): Map<Int, EntityAction> =
+        myWorkers().map { w -> w to resources().minByOrNull { w.distance(it) }!! }
+            .map { (w, r) -> w.id to attackAction(r) }
+            .toMap()
 
     private fun buildSupply(resActions: MutableMap<Int, EntityAction>) {
         val supplyPos: Vec2Int
