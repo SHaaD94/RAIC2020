@@ -5,7 +5,7 @@ import model.PlayerView
 
 object State {
     private var initialized = false
-    var populationAvailable = 0
+    var availableSupply = 0
     var playerView: PlayerView = PlayerView()
     fun update(playerView: PlayerView) {
         fun init() {
@@ -17,7 +17,7 @@ object State {
 
         this.playerView = playerView
 
-        this.populationAvailable = myEntities().map {
+        this.availableSupply = myEntities().map {
             val eInfo = entityStats[it.entityType]!!
             eInfo.populationProvide - eInfo.populationUse
         }.sum()

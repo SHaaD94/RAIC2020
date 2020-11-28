@@ -6,9 +6,11 @@ import model.Vec2Float
 import model.Vec2Int
 
 fun Vec2Float.distance(v: Vec2Float): Double =
-        FastMath.hypot((v.x - this.x).toDouble(), (v.y - this.y).toDouble())
+    FastMath.hypot((v.x - this.x).toDouble(), (v.y - this.y).toDouble())
 
 fun Vec2Int.distance(v: Vec2Int): Double =
-        FastMath.hypot((v.x - this.x).toDouble(), (v.y - this.y).toDouble())
+    FastMath.hypot((v.x - this.x).toDouble(), (v.y - this.y).toDouble())
 
 fun Entity.distance(entity: Entity): Double = this.position.distance(entity.position)
+
+fun Entity.distance(v: Vec2Int): Double = this.position.distance(v)

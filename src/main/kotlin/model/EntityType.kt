@@ -1,5 +1,7 @@
 package model
 
+import impl.global.entityStats
+
 enum class EntityType(var tag: Int) {
     WALL(0),
     HOUSE(1),
@@ -12,3 +14,6 @@ enum class EntityType(var tag: Int) {
     RESOURCE(8),
     TURRET(9)
 }
+
+fun EntityType.size() = entityStats[this]!!.size
+

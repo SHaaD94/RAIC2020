@@ -30,6 +30,13 @@
         <!--            <version>2.11.3</version>-->
         <!--        </dependency>-->
 
+        <dependency>                                                <!--remove-before-sending-->
+            <groupId>org.junit.jupiter</groupId>                    <!--remove-before-sending-->
+            <artifactId>junit-jupiter-engine</artifactId>           <!--remove-before-sending-->
+            <version>5.5.2</version>                                <!--remove-before-sending-->
+            <scope>test</scope>                                     <!--remove-before-sending-->
+        </dependency>                                               <!--remove-before-sending-->
+
     </dependencies>
 
     <build>

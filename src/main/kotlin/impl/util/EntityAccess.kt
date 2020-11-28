@@ -12,13 +12,16 @@ fun myPlayerId() = playerView.myId
 
 fun currentTick(): Int = playerView.currentTick
 
-fun entities(type: EntityType): Sequence<Entity> = playerView.entities.asSequence().filter { it.entityType == type }
+
+fun entities(): Sequence<Entity> = playerView.entities.asSequence()
+
+fun entities(type: EntityType): Sequence<Entity> = entities().filter { it.entityType == type }
 
 fun units(): Sequence<Entity> = playerView.entities.asSequence().filter { it.entityType != RESOURCE }
 
 fun myEntities(type: EntityType? = null): Sequence<Entity> = units()
-        .filter { it.playerId == myPlayerId() }
-        .let { u -> type?.let { u.filter { it.entityType == type } } ?: u }
+    .filter { it.playerId == myPlayerId() }
+    .let { u -> type?.let { u.filter { it.entityType == type } } ?: u }
 
 fun myUnits(type: EntityType? = null) = myEntities(type).filter { unitTypes.contains(it.entityType) }
 
