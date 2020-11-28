@@ -2,11 +2,15 @@ import impl.*
 import impl.global.State
 import impl.global.State.availableSupply
 import impl.global.initEntityStats
+import impl.production.UnitProductionGenerator
 import impl.util.*
 import impl.util.algo.distance
 import model.*
 
 class MyStrategy {
+
+    var currentOrder: EntityType? = null
+
     fun getAction(playerView: PlayerView, debugInterface: DebugInterface?): Action {
         initEntityStats(playerView)
         State.update(playerView)
@@ -17,15 +21,33 @@ class MyStrategy {
 
         resActions.putAll(gatherResources)
 
-        resActions.putAll(buildWorkers())
-
-        resActions.putAll(buildRanges())
-
         resActions.putAll(repairBuildings())
+
+        fun produce(e: EntityType) = when (e) {
+//            EntityType.HOUSE -> buildSupply()
+            EntityType.MELEE_UNIT -> myBuildings(EntityType.MELEE_BASE).map {
+                it.id to buildUnit(it, EntityType.MELEE_UNIT)
+            }.toMap()
+            EntityType.RANGED_UNIT -> myBuildings(EntityType.RANGED_BASE).map {
+                it.id to buildUnit(it, EntityType.RANGED_UNIT)
+            }.toMap()
+            EntityType.BUILDER_UNIT -> myBuildings(EntityType.BUILDER_BASE).map {
+                it.id to buildUnit(it, EntityType.BUILDER_UNIT)
+            }.toMap()
+            else -> mapOf()
+        }
+
+        if (currentOrder == null) {
+            currentOrder = UnitProductionGenerator.nextUnitToProduce.next()
+        }
+        if (availableResources() >= currentOrder!!.cost()) {
+            resActions.putAll(produce(currentOrder!!))
+            currentOrder = null
+        }
 
         println("Supply $availableSupply")
         if (availableSupply < 5) {
-            buildSupply(resActions)
+            resActions.putAll(buildSupply())
         }
 
         return Action(resActions)
@@ -36,20 +58,12 @@ class MyStrategy {
             myWorkers().sortedBy { it.distance(b) }.take(2).map { it.id to repairAction(it, b) }
         }.toMap()
 
-    private fun buildWorkers(): Map<Int, EntityAction> = myBuildings(EntityType.BUILDER_BASE).map {
-        it.id to buildUnit(it, EntityType.BUILDER_UNIT)
-    }.toMap()
-
-    private fun buildRanges(): Map<Int, EntityAction> = myBuildings(EntityType.RANGED_BASE).map {
-        it.id to buildUnit(it, EntityType.RANGED_UNIT)
-    }.toMap()
-
     private fun assignWorkersResources(): Map<Int, EntityAction> =
         myWorkers().map { w -> w to resources().minByOrNull { w.distance(it) }!! }
             .map { (w, r) -> w.id to attackAction(r) }
             .toMap()
 
-    private fun buildSupply(resActions: MutableMap<Int, EntityAction>) {
+    private fun buildSupply(): Map<Int, EntityAction> {
         val supplyPos: Vec2Int
         val supplySize = EntityType.HOUSE.size()
         var xMax = 0
@@ -91,7 +105,8 @@ class MyStrategy {
         val worker = myWorkers().filter {
             !intersects(supplyPos, supplySize, it.position, it.size())
         }.minByOrNull { it.distance(supplyPos) }!!
-        resActions[worker.id] = constructBuilding(worker, EntityType.HOUSE, supplyPos)
+
+        return mapOf(worker.id to constructBuilding(worker, EntityType.HOUSE, supplyPos))
     }
 
     fun debugUpdate(playerView: PlayerView, debugInterface: DebugInterface) {
