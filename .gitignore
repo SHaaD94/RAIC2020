@@ -13,3 +13,5 @@ out/
 aicup2020.iml
 
 runner/aicup2020-preferences.json
+
+.target/
