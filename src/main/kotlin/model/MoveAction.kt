@@ -13,7 +13,7 @@ class MoveAction {
         this.breakThrough = breakThrough
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): MoveAction {
             val result = MoveAction()
             result.target = model.Vec2Int.readFrom(stream)
@@ -22,7 +22,7 @@ class MoveAction {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         target.writeTo(stream)
         StreamUtil.writeBoolean(stream, findClosestPosition)

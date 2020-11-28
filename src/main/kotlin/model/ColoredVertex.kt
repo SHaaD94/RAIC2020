@@ -13,7 +13,7 @@ class ColoredVertex {
         this.color = color
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): ColoredVertex {
             val result = ColoredVertex()
             if (StreamUtil.readBoolean(stream)) {
@@ -26,7 +26,7 @@ class ColoredVertex {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         val worldPos = worldPos;
         if (worldPos == null) {

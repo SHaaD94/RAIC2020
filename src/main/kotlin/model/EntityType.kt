@@ -1,8 +1,6 @@
 package model
 
-import util.StreamUtil
-
-enum class EntityType private constructor(var tag: Int) {
+enum class EntityType(var tag: Int) {
     WALL(0),
     HOUSE(1),
     BUILDER_BASE(2),

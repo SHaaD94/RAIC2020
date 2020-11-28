@@ -3,10 +3,10 @@ package model
 import util.StreamUtil
 
 abstract class DebugData {
-    @Throws(java.io.IOException::class)
+
     abstract fun writeTo(stream: java.io.OutputStream)
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): DebugData {
             when (StreamUtil.readInt(stream)) {
                 Log.TAG -> return Log.readFrom(stream)
@@ -25,14 +25,14 @@ abstract class DebugData {
         }
         companion object {
             val TAG = 0
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Log {
                 val result = Log()
                 result.text = StreamUtil.readString(stream)
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             StreamUtil.writeString(stream, text)
@@ -49,7 +49,7 @@ abstract class DebugData {
         }
         companion object {
             val TAG = 1
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Primitives {
                 val result = Primitives()
                 result.vertices = Array(StreamUtil.readInt(stream), {
@@ -65,7 +65,7 @@ abstract class DebugData {
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             StreamUtil.writeInt(stream, vertices.size)
@@ -90,7 +90,7 @@ abstract class DebugData {
         }
         companion object {
             val TAG = 2
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): PlacedText {
                 val result = PlacedText()
                 result.vertex = model.ColoredVertex.readFrom(stream)
@@ -100,7 +100,7 @@ abstract class DebugData {
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             vertex.writeTo(stream)

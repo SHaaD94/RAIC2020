@@ -17,7 +17,7 @@ class Camera {
         this.perspective = perspective
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Camera {
             val result = Camera()
             result.center = model.Vec2Float.readFrom(stream)
@@ -28,7 +28,7 @@ class Camera {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         center.writeTo(stream)
         StreamUtil.writeFloat(stream, rotation)

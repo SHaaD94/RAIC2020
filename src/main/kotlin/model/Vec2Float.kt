@@ -2,26 +2,17 @@ package model
 
 import util.StreamUtil
 
-class Vec2Float {
-    var x: Float = 0.0f
-    var y: Float = 0.0f
-    constructor() {}
-    constructor(x: Float, y: Float) {
-        this.x = x
-        this.y = y
-    }
+data class Vec2Float(val x: Float = 0.0F, val y: Float = 0.0F) {
     companion object {
-        @Throws(java.io.IOException::class)
-        fun readFrom(stream: java.io.InputStream): Vec2Float {
-            val result = Vec2Float()
-            result.x = StreamUtil.readFloat(stream)
-            result.y = StreamUtil.readFloat(stream)
-            return result
-        }
+        fun readFrom(stream: java.io.InputStream): Vec2Float =
+            Vec2Float(StreamUtil.readFloat(stream), StreamUtil.readFloat(stream))
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeFloat(stream, x)
         StreamUtil.writeFloat(stream, y)
     }
+
+    operator fun minus(v: Vec2Float) = Vec2Float(this.x - v.x, this.y - v.y)
+    operator fun plus(v: Vec2Float) = Vec2Float(this.x + v.x, this.y + v.y)
 }

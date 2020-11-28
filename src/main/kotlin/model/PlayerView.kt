@@ -25,7 +25,7 @@ class PlayerView {
         this.entities = entities
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): PlayerView {
             val result = PlayerView()
             result.myId = StreamUtil.readInt(stream)
@@ -68,7 +68,7 @@ class PlayerView {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, myId)
         StreamUtil.writeInt(stream, mapSize)

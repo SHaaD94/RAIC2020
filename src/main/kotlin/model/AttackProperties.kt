@@ -13,7 +13,7 @@ class AttackProperties {
         this.collectResource = collectResource
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): AttackProperties {
             val result = AttackProperties()
             result.attackRange = StreamUtil.readInt(stream)
@@ -22,7 +22,7 @@ class AttackProperties {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, attackRange)
         StreamUtil.writeInt(stream, damage)

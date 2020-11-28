@@ -19,7 +19,7 @@ class Entity {
         this.active = active
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Entity {
             val result = Entity()
             result.id = StreamUtil.readInt(stream)
@@ -47,7 +47,7 @@ class Entity {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, id)
         val playerId = playerId;

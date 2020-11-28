@@ -5,13 +5,14 @@ import util.StreamUtil
 class AttackAction {
     var target: Int? = null
     var autoAttack: model.AutoAttack? = null
+
     constructor() {}
-    constructor(target: Int?, autoAttack: model.AutoAttack?) {
+    constructor(target: Int?, autoAttack: model.AutoAttack? = null) {
         this.target = target
         this.autoAttack = autoAttack
     }
+
     companion object {
-        @Throws(java.io.IOException::class)
         fun readFrom(stream: java.io.InputStream): AttackAction {
             val result = AttackAction()
             if (StreamUtil.readBoolean(stream)) {
@@ -27,7 +28,7 @@ class AttackAction {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         val target = target;
         if (target == null) {

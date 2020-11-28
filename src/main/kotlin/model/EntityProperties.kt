@@ -33,7 +33,7 @@ class EntityProperties {
         this.repair = repair
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): EntityProperties {
             val result = EntityProperties()
             result.size = StreamUtil.readInt(stream)
@@ -64,7 +64,7 @@ class EntityProperties {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, size)
         StreamUtil.writeInt(stream, buildScore)

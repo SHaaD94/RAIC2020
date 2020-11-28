@@ -19,7 +19,7 @@ class DebugState {
         this.playerIndex = playerIndex
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): DebugState {
             val result = DebugState()
             result.windowSize = model.Vec2Int.readFrom(stream)
@@ -35,7 +35,7 @@ class DebugState {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         windowSize.writeTo(stream)
         mousePosWindow.writeTo(stream)

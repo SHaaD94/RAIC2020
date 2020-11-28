@@ -11,7 +11,7 @@ class BuildProperties {
         this.initHealth = initHealth
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): BuildProperties {
             val result = BuildProperties()
             result.options = Array(StreamUtil.readInt(stream), {
@@ -39,7 +39,7 @@ class BuildProperties {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, options.size)
         for (optionsElement in options) {

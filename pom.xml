@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.codegame.aicup2020.devkit</groupId>
     <artifactId>aicup2020</artifactId>
@@ -9,6 +10,7 @@
     <name>aicup2020</name>
 
     <properties>
+        <kotlin.code.style>official</kotlin.code.style>
         <kotlin.version>1.4.20</kotlin.version>
         <main.class>Runner</main.class>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -21,6 +23,13 @@
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
+
+        <!--        <dependency>-->
+        <!--            <groupId>com.fasterxml.jackson.core</groupId>-->
+        <!--            <artifactId>jackson-databind</artifactId>-->
+        <!--            <version>2.11.3</version>-->
+        <!--        </dependency>-->
+
     </dependencies>
 
     <build>
@@ -33,7 +42,7 @@
                 <groupId>org.jetbrains.kotlin</groupId>
                 <version>${kotlin.version}</version>
 
-                <configuration />
+                <configuration/>
                 <executions>
                     <execution>
                         <id>compile</id>
