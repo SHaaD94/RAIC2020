@@ -29,7 +29,7 @@ object ArmyMovementManager : ActionProvider {
                 ?.first
         }
             .filter { it.second != null }
-            .forEach { (u, e) -> resultActions[u.id] = attackAction(e!!) }
+            .forEach { (u, e) -> resultActions[u.id] = attackAction(e!!, null) }
 
         //fresh units movement
         myArmy()

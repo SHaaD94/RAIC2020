@@ -2,7 +2,7 @@ package impl.util
 
 import model.*
 
-fun attackAction(target: Entity, autoAttack: AutoAttack = AutoAttack(100, arrayOf())) = EntityAction(
+fun attackAction(target: Entity, autoAttack: AutoAttack? = AutoAttack(100, arrayOf())) = EntityAction(
     attackAction = AttackAction(target.id, autoAttack)
 )
 

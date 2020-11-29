@@ -19,4 +19,6 @@ fun EntityType.size() = entityStats[this]!!.size
 fun EntityType.maxHP() = entityStats[this]!!.maxHealth
 fun EntityType.cost() = entityStats[this]!!.cost
 fun EntityType.attackRange() = entityStats[this]!!.attack?.attackRange ?: 1
+fun EntityType.populationProvide() = entityStats[this]!!.populationProvide
+fun EntityType.populationUse() = entityStats[this]!!.populationUse
 

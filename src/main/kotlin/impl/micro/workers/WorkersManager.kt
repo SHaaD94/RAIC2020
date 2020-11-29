@@ -34,7 +34,7 @@ object WorkersManager : ActionProvider {
 
         val worker = freeWorkers.filter {
             !intersects(supplyPos, br.type.size(), it.position, it.size())
-        }.minByOrNull { it.distance(supplyPos) }!!
+        }.minByOrNull { it.distance(supplyPos) } ?: return mapOf()
 
         val existingBuilding = myBuildings(br.type).firstOrNull { it.position == br.coordinate }
         val action = if (existingBuilding == null) {
@@ -68,7 +68,9 @@ object WorkersManager : ActionProvider {
             repairAction = RepairAction(target.id)
             // otherwise go to the nearest one
         ) else moveAction(
-            borderCells.filter { !cellOccupied(it, worker) }.minByOrNull { it.distance(worker.position) }!!,
+            borderCells.filter { !cellOccupied(it, worker) }.minByOrNull { it.distance(worker.position) }
+            //FIXME HACK WITH DEFAULT VALUE
+                ?: target.position,
             true,
             true
         )
@@ -82,7 +84,9 @@ object WorkersManager : ActionProvider {
             buildAction = BuildAction(type, pos)
             // otherwise go to the nearest one
         ) else moveAction(borderCells.filter { !cellOccupied(it, worker) }
-            .minByOrNull { it.distance(worker.position) }!!, true, true)
+            .minByOrNull { it.distance(worker.position) }
+        //FIXME HACK WITH DEFAULT VALUE
+            ?: pos, true, true)
     }
 
 }

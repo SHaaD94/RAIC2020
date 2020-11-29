@@ -14,5 +14,10 @@ aicup2020.iml
 
 target/
 
-runner/test_quickstartguy_r1_1x1/res.json
+runner/test_quickstartguy_r1_1x3/res.json
 runner/aicup2020-preferences.json
+runner/config-seed.json
+
+release/
+
+venv/
