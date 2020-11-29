@@ -2,7 +2,7 @@ import impl.*
 import impl.global.State
 import impl.global.State.availableSupply
 import impl.global.initEntityStats
-import impl.production.UnitProductionGenerator
+import impl.production.units.UnitProductionGenerator
 import impl.util.*
 import impl.util.algo.distance
 import model.*

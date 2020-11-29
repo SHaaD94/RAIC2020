@@ -32,9 +32,4 @@ object State {
                 eInfo.populationProvide - eInfo.populationUse
             }.sum()
     }
-
-    //-------- Defined by me
-    // TODO this solution looks like shit, refactor later
-    val inQueue = mutableListOf<EntityType>()
-
 }
