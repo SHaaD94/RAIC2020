@@ -20,6 +20,8 @@ data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
     operator fun plus(v: Vec2Int) = Vec2Int(this.x + v.x, this.y + v.y)
     operator fun plus(s: Int) = Vec2Int(this.x + s, this.y + s)
 
+    operator fun div(s: Int) = Vec2Int(this.x / s, this.y / s)
+
     override fun compareTo(other: Vec2Int): Int {
         if (x < other.x) return -1
         if (x > other.x) return 1

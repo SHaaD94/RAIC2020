@@ -88,6 +88,7 @@ class Entity {
     }
 
     fun maxHP() = this.entityType.maxHP()
+    fun attackRange() = this.entityType.attackRange()
 
     fun isBuilding() = buildingTypes.contains(this.entityType)
 }
