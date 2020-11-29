@@ -3,63 +3,75 @@ package impl.micro.workers
 import impl.*
 import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
+import impl.util.*
 import impl.util.algo.distance
-import impl.util.attackAction
-import impl.util.cellsAround
-import impl.util.intersects
-import impl.util.moveAction
 import model.*
 
 object WorkersManager : ActionProvider {
     override fun provideActions(): Map<Int, EntityAction> {
-        return if (resources().isNotEmpty()) {
-            assignWorkersResources()
-        } else {
-            runTo00()
-        } + BuildingProductionManager.buildingRequests
-            .map { constructBuilding(it) }
-            .foldRight(mapOf()) { acc, map -> acc + map } + repairBuildings()
+        val resultActions = mutableMapOf<Int, EntityAction>()
+
+        fun freeWorkers() = myWorkers().filter { !resultActions.containsKey(it.id) }
+
+        BuildingProductionManager.buildingRequests
+            .asSequence()
+            .map { constructBuilding(it, freeWorkers()) }
+            .forEach { resultActions.putAll(it) }
+
+        resultActions.putAll(repairBuildings(freeWorkers()))
+
+        resultActions.putAll(
+            if (resources().isNotEmpty()) assignWorkersResources(freeWorkers()) else runTo00(
+                freeWorkers()
+            )
+        )
+
+        return resultActions
     }
 
-    private fun constructBuilding(br: BuildingRequest): Map<Int, EntityAction> {
+    private fun constructBuilding(br: BuildingRequest, freeWorkers: Sequence<Entity>): Map<Int, EntityAction> {
         val supplyPos: Vec2Int = br.coordinate
 
-        val worker = findWorkerToBuild(supplyPos, br.type)
+        val worker = freeWorkers.filter {
+            !intersects(supplyPos, br.type.size(), it.position, it.size())
+        }.minByOrNull { it.distance(supplyPos) }!!
 
-        return mapOf(worker.id to constructBuilding(worker, br.type, supplyPos))
+        val existingBuilding = myBuildings(br.type).firstOrNull { it.position == br.coordinate }
+        val action = if (existingBuilding == null) {
+            constructBuilding(worker, br.type, supplyPos)
+        } else {
+            repairBuilding(worker, existingBuilding)
+        }
+
+        return mapOf(worker.id to action)
     }
 
-    private fun findWorkerToBuild(supplyPos: Vec2Int, buildingType: EntityType) = myWorkers().filter {
-        !intersects(supplyPos, buildingType.size(), it.position, it.size())
-    }.minByOrNull { it.distance(supplyPos) }!!
-
-    private fun repairBuildings(): Map<Int, EntityAction> =
+    private fun repairBuildings(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
-            myWorkers().sortedBy { it.distance(b) }.take(2).map { it.id to repairAction(it, b) }
+            freeWorkers.sortedBy { it.distance(b) }.take(2).map { it.id to repairBuilding(it, b) }
         }.toMap()
 
-    private fun assignWorkersResources(): Map<Int, EntityAction> =
-        myWorkers().map { w -> w to resources().minByOrNull { w.distance(it) }!! }
-            .map { (w, r) -> w.id to attackAction(r, AutoAttack(200)) }
+    private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
+        freeWorkers.map { w -> w to resources().minByOrNull { w.distance(it) }!! }
+            .map { (w, r) -> w.id to attackAction(r, AutoAttack(500)) }
             .toMap()
 
-    private fun runTo00(): Map<Int, EntityAction> =
-        myWorkers()
+    private fun runTo00(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
+        freeWorkers
             .map { w -> w.id to moveAction(Vec2Int(0, 0), findClosestPosition = true, breakThrough = false) }
             .toMap()
 
-    private fun repairAction(worker: Entity, target: Entity): EntityAction {
+    private fun repairBuilding(worker: Entity, target: Entity): EntityAction {
         val borderCells = cellsAround(target)
         // if builder is on one of them repair
         return if (borderCells.contains(worker.position)) EntityAction(
             repairAction = RepairAction(target.id)
             // otherwise go to the nearest one
-        ) else EntityAction(
-            moveAction = MoveAction(
-                borderCells.minByOrNull { it.distance(worker.position) }!!, false, true
-            )
+        ) else moveAction(
+            borderCells.filter { !cellOccupied(it, worker) }.minByOrNull { it.distance(worker.position) }!!,
+            true,
+            true
         )
-
     }
 
     private fun constructBuilding(worker: Entity, type: EntityType, pos: Vec2Int): EntityAction {
@@ -68,12 +80,9 @@ object WorkersManager : ActionProvider {
         // if builder is on one of them build
         return if (borderCells.contains(worker.position)) EntityAction(
             buildAction = BuildAction(type, pos)
-            // otherwise go to the neares one
-        ) else EntityAction(
-            moveAction = MoveAction(
-                borderCells.minByOrNull { it.distance(worker.position) }!!, false, true
-            )
-        )
+            // otherwise go to the nearest one
+        ) else moveAction(borderCells.filter { !cellOccupied(it, worker) }
+            .minByOrNull { it.distance(worker.position) }!!, true, true)
     }
 
 }
