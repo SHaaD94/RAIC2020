@@ -69,22 +69,20 @@ def main(args):
 
     games = run_games(folder, repeats)
 
-    win_percent = len(list(filter(lambda x: x.is_winner, games))) * 1.0 / repeats * 100.0
-    failed_games = len(list(filter(lambda x: x.is_winner, games)))
+    win_percent = len(list(filter(lambda x: bool(x.is_winner), games))) * 1.0 / repeats * 100.0
+    crashed_games = len(list(filter(lambda x: bool(x.is_crashed), games)))
 
     for g in games:
-        # print(f'Game 1: {g}')
-        print(g)
+        print(f'Game 1: {g}')
 
-    if failed_games != 0:
-        sys.exit(f"Strategy failed in {failed_games} out of {repeats}")
+    if crashed_games != 0:
+        sys.exit(f"Strategy failed in {crashed_games} out of {repeats}")
 
-    if win_percent != 0:
+    if win_percent < win_threshold_in_percents:
         sys.exit(f"Strategy won in {win_percent} which is less than required {win_threshold_in_percents}")
 
-    print(win_percent)
+    print('Run is successful :)')
 
-    print(games)
 
-    if __name__ == '__main__':
-        main(sys.argv[1:])
+if __name__ == '__main__':
+    main(sys.argv[1:])
