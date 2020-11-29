@@ -20,7 +20,11 @@ object UnitProductionManager : ActionProvider {
             currentOrder = null
             actions
         } else
-            mapOf()
+            //flush building orders
+            myBuildings().filter {
+                it.entityType == EntityType.RANGED_BASE
+                        || it.entityType == EntityType.MELEE_BASE || it.entityType == EntityType.BUILDER_BASE
+            }.map { it.id to EntityAction() }.toMap()
     }
 
     private fun produceUnit(builder: EntityType, unit: EntityType) =

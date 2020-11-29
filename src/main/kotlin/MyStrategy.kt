@@ -4,6 +4,7 @@ import impl.micro.army.ArmyMovementManager
 import impl.micro.workers.WorkersManager
 import impl.production.buildings.BuildingProductionManager
 import impl.production.units.UnitProductionManager
+import impl.util.algo.CellIndex
 import model.Action
 import model.EntityAction
 import model.PlayerView
@@ -20,6 +21,7 @@ class MyStrategy {
     fun getAction(playerView: PlayerView, debugInterface: DebugInterface?): Action {
         initEntityStats(playerView)
         State.update(playerView)
+        CellIndex.update(playerView)
 
         val resActions = mutableMapOf<Int, EntityAction>()
 
