@@ -8,7 +8,6 @@ import impl.util.cellsAround
 import model.*
 
 object UnitProductionManager : ActionProvider {
-
     var currentOrder: EntityType? = null
 
     override fun provideActions(): Map<Int, EntityAction> {
@@ -25,7 +24,10 @@ object UnitProductionManager : ActionProvider {
     }
 
     private fun produceUnit(builder: EntityType, unit: EntityType) =
-        myBuildings(builder).map { it.id to buildUnitAction(it, unit) }.toMap()
+        myBuildings(builder)
+            .map { b -> b to cellsAround(b).firstOrNull { !cellOccupied(it.x, it.y) } }
+            .filter { it.second != null }
+            .map { (b, positionToBuildUnit) -> b.id to buildUnitAction(unit, positionToBuildUnit!!) }.toMap()
 
     private fun produce(e: EntityType) = when (e) {
         EntityType.MELEE_UNIT -> produceUnit(EntityType.MELEE_BASE, EntityType.MELEE_UNIT)
@@ -34,11 +36,8 @@ object UnitProductionManager : ActionProvider {
         else -> mapOf()
     }
 
-    private fun buildUnitAction(builder: Entity, unitType: EntityType): EntityAction = EntityAction(
-        buildAction = BuildAction(
-            unitType,
-            cellsAround(builder).first { !cellOccupied(it.x, it.y) }
+    private fun buildUnitAction(unitType: EntityType, position2Build: Vec2Int): EntityAction =
+        EntityAction(
+            buildAction = BuildAction(unitType, position2Build)
         )
-    )
-
 }

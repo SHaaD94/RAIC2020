@@ -7,6 +7,7 @@ import impl.util.algo.distance
 import impl.util.attackAction
 import impl.util.cellsAround
 import impl.util.intersects
+import impl.util.moveAction
 import model.*
 
 object WorkersManager : ActionProvider {
@@ -14,7 +15,7 @@ object WorkersManager : ActionProvider {
         return if (resources().isNotEmpty()) {
             assignWorkersResources()
         } else {
-            attackByWorkers()
+            runTo00()
         } + BuildingProductionManager.buildingRequests
             .map { constructBuilding(it) }
             .foldRight(mapOf()) { acc, map -> acc + map } + repairBuildings()
@@ -39,22 +40,20 @@ object WorkersManager : ActionProvider {
 
     private fun assignWorkersResources(): Map<Int, EntityAction> =
         myWorkers().map { w -> w to resources().minByOrNull { w.distance(it) }!! }
-            .map { (w, r) -> w.id to attackAction(r) }
+            .map { (w, r) -> w.id to attackAction(r, AutoAttack(200)) }
             .toMap()
 
-    private fun attackByWorkers(): Map<Int, EntityAction> =
-        myWorkers().map { w -> w to enemies().minByOrNull { it.distance(w) } }
-            .filter { it.second != null }
-            .map { (w, e) -> w.id to attackAction(e!!) }
+    private fun runTo00(): Map<Int, EntityAction> =
+        myWorkers()
+            .map { w -> w.id to moveAction(Vec2Int(0, 0), findClosestPosition = true, breakThrough = false) }
             .toMap()
-
 
     private fun repairAction(worker: Entity, target: Entity): EntityAction {
         val borderCells = cellsAround(target)
         // if builder is on one of them repair
         return if (borderCells.contains(worker.position)) EntityAction(
             repairAction = RepairAction(target.id)
-            // otherwise go to the neares one
+            // otherwise go to the nearest one
         ) else EntityAction(
             moveAction = MoveAction(
                 borderCells.minByOrNull { it.distance(worker.position) }!!, false, true

@@ -91,5 +91,3 @@ class Entity {
 
     fun isBuilding() = buildingTypes.contains(this.entityType)
 }
-
-
