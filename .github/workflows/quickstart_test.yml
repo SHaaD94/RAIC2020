@@ -29,5 +29,5 @@ jobs:
 
       - name: Start test
         run |
-        cd runner
-        python3 game_runner.py test_quickstartguy_r1_1x1 10 95
+          cd runner
+          python3 game_runner.py test_quickstartguy_r1_1x1 10 95
