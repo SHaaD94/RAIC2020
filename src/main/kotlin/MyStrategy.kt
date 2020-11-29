@@ -42,7 +42,6 @@ class MyStrategy {
             currentOrder = null
         }
 
-        println("Supply $availableSupply")
         if (availableSupply < 5) {
             resActions.putAll(buildSupply())
         }
@@ -106,7 +105,6 @@ class MyStrategy {
             yMax += 1
         }
 
-        println("Supply position $supplyPos")
         val worker = myWorkers().filter {
             !intersects(supplyPos, supplySize, it.position, it.size())
         }.minByOrNull { it.distance(supplyPos) }!!
