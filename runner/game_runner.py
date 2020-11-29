@@ -46,6 +46,7 @@ def parse_game_result(res_file):
 def run_games(folder, repeats):
     games = []
     for i in range(repeats):
+        print(f'Starting game number {i}')
         runner_process = subprocess.Popen(['./aicup2020',
                                            '--batch-mode',
                                            '--config', f'{folder}/config.json',
@@ -72,8 +73,8 @@ def main(args):
     win_percent = len(list(filter(lambda x: bool(x.is_winner), games))) * 1.0 / repeats * 100.0
     crashed_games = len(list(filter(lambda x: bool(x.is_crashed), games)))
 
-    for g in games:
-        print(f'Game 1: {g}')
+    for i, g in enumerate(games):
+        print(f'Game {i + 1}: {g}')
 
     if crashed_games != 0:
         sys.exit(f"Strategy failed in {crashed_games} out of {repeats}")
