@@ -3,10 +3,9 @@ package impl.production.units
 import impl.ActionProvider
 import impl.availableResources
 import impl.myBuildings
-import impl.util.buildUnit
-import model.EntityAction
-import model.EntityType
-import model.cost
+import impl.util.cellOccupied
+import impl.util.cellsAround
+import model.*
 
 object UnitProductionManager : ActionProvider {
 
@@ -26,7 +25,7 @@ object UnitProductionManager : ActionProvider {
     }
 
     private fun produceUnit(builder: EntityType, unit: EntityType) =
-        myBuildings(builder).map { it.id to buildUnit(it, unit) }.toMap()
+        myBuildings(builder).map { it.id to buildUnitAction(it, unit) }.toMap()
 
     private fun produce(e: EntityType) = when (e) {
         EntityType.MELEE_UNIT -> produceUnit(EntityType.MELEE_BASE, EntityType.MELEE_UNIT)
@@ -34,4 +33,12 @@ object UnitProductionManager : ActionProvider {
         EntityType.BUILDER_UNIT -> produceUnit(EntityType.BUILDER_BASE, EntityType.BUILDER_UNIT)
         else -> mapOf()
     }
+
+    private fun buildUnitAction(builder: Entity, unitType: EntityType): EntityAction = EntityAction(
+        buildAction = BuildAction(
+            unitType,
+            cellsAround(builder).first { !cellOccupied(it.x, it.y) }
+        )
+    )
+
 }

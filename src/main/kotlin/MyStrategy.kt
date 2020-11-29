@@ -11,8 +11,8 @@ import model.PlayerView
 class MyStrategy {
 
     val actionProviders = listOf(
-        WorkersManager,
         BuildingProductionManager,
+        WorkersManager,
         UnitProductionManager,
         ArmyMovementManager
     )

@@ -1,30 +1,49 @@
 package impl.production.buildings
 
-import impl.ActionProvider
-import impl.entities
+import impl.*
 import impl.global.State.availableSupply
-import impl.myWorkers
-import impl.util.algo.distance
-import impl.util.constructBuilding
 import impl.util.intersects
-import model.EntityAction
-import model.EntityType
-import model.Vec2Int
-import model.size
+import model.*
+import java.util.*
 
+data class BuildingRequest(val type: EntityType, var coordinate: Vec2Int)
+
+//TODO probably it is not ActionProvider anymore
 object BuildingProductionManager : ActionProvider {
+    val buildingRequests = LinkedList<BuildingRequest>()
 
     override fun provideActions(): Map<Int, EntityAction> {
-        return if (availableSupply < 5) {
-            buildSupply()
-        } else mapOf()
+        monitorFinishedBuildings()
+        when {
+            availableSupply < 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) == 0 -> {
+                buildingRequests.add(
+                    BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE))
+                )
+            }
+//            availableResources() > EntityType.RANGED_BASE.cost() -> {
+//                constructBuilding(EntityType.RANGED_BASE)
+//            }
+        }
+        return mapOf()
     }
 
-    //TODO this class should use production QUEUE
+    fun reservedResources() = buildingRequests.sumBy { it.type.cost() }
 
-    private fun buildSupply(): Map<Int, EntityAction> {
+    //TODO perfect place for index usage
+    private fun monitorFinishedBuildings() {
+        val finishedRequests = buildingRequests.filter { br ->
+            myBuildings(br.type).firstOrNull { it.position == br.coordinate && it.active } != null
+        }
+        buildingRequests.removeAll(finishedRequests)
+    }
+
+    private fun numbersOfBuildingsInQueue(type: EntityType) =
+        buildingRequests.count { it.type == type }
+
+    //TODO place for optimizations
+    private fun findPosition(buildingType: EntityType): Vec2Int {
         val supplyPos: Vec2Int
-        val supplySize = EntityType.HOUSE.size()
+        val supplySize = buildingType.size()
         var xMax = 0
         var yMax = 0
         outer@ while (true) {
@@ -59,12 +78,7 @@ object BuildingProductionManager : ActionProvider {
             xMax += 1
             yMax += 1
         }
-
-        val worker = myWorkers().filter {
-            !intersects(supplyPos, supplySize, it.position, it.size())
-        }.minByOrNull { it.distance(supplyPos) }!!
-
-        return mapOf(worker.id to constructBuilding(worker, EntityType.HOUSE, supplyPos))
+        return supplyPos
     }
 
 }

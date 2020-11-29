@@ -14,7 +14,7 @@ object ArmyMovementManager : ActionProvider {
         val randomArmyMovementActions = myArmy().map { u ->
             val closesEnemy = enemies().map { it to it.distance(u.position) }.filter { it.second < 30.0 }
                 .minByOrNull { it.second }?.first
-            u.id to if (closesEnemy == null) moveAction(Vec2Int(20, 20)) else attackAction(closesEnemy)
+            u.id to if (closesEnemy == null) moveAction(Vec2Int(25, 25)) else attackAction(closesEnemy)
         }.toMap()
 
         return randomArmyMovementActions

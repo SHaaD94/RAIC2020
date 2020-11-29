@@ -77,7 +77,7 @@ def main(args):
         print(f'Game {i + 1}: {g}')
 
     if crashed_games != 0:
-        sys.exit(f"Strategy failed in {crashed_games} out of {repeats}")
+        sys.exit(f"Strategy crashed in {crashed_games} out of {repeats}")
 
     if win_percent < win_threshold_in_percents:
         sys.exit(f"Strategy won in {win_percent} which is less than required {win_threshold_in_percents}")

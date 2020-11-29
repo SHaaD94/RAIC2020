@@ -1,6 +1,7 @@
 package impl
 
 import impl.global.State.playerView
+import impl.production.buildings.BuildingProductionManager
 import model.Entity
 import model.EntityType
 import model.EntityType.*
@@ -38,4 +39,5 @@ fun enemies() = entities().filter { it.playerId != null && it.playerId != myPlay
 
 //--------------------------------------------------------
 
-fun availableResources() = playerView.players.asSequence().first { it.id == myPlayerId() }.resource
+fun availableResources() = playerView.players
+    .first { it.id == myPlayerId() }.resource - BuildingProductionManager.reservedResources()

@@ -83,6 +83,10 @@ class Entity {
         return impl.util.intersects(this.position, e1Size, e.position, e2Size)
     }
 
+    fun contains(v: Vec2Int): Boolean {
+        return v.x in (this.position.x until this.position.x + size()) && v.y in (this.position.y until this.position.y + size())
+    }
+
     fun maxHP() = this.entityType.maxHP()
 
     fun isBuilding() = buildingTypes.contains(this.entityType)
