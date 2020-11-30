@@ -16,24 +16,32 @@ object BuildingProductionManager : ActionProvider {
     override fun provideActions(): Map<Int, EntityAction> {
         monitorBuildingsRequests()
         when {
+            myBuildings(EntityType.BUILDER_BASE).count() == 0 ->
+                requestBuilding(EntityType.BUILDER_BASE)
+            myBuildings(EntityType.RANGED_BASE).count() == 0 ->
+                requestBuilding(EntityType.RANGED_BASE)
             totalSupply >= 100 && myBuildings(EntityType.RANGED_BASE).count() <= 2 &&
                     numbersOfBuildingsInQueue(EntityType.RANGED_BASE) == 0 -> {
-                buildingRequests.add(BuildingRequest(EntityType.RANGED_BASE, findPosition(EntityType.RANGED_BASE)))
+                requestBuilding(EntityType.RANGED_BASE)
             }
             totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 5 -> {
-                buildingRequests.add(BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE)))
+                requestBuilding(EntityType.HOUSE)
             }
             totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
-                buildingRequests.add(BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE)))
+                requestBuilding(EntityType.HOUSE)
             }
             totalSupply < 100 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) == 0 -> {
-                buildingRequests.add(BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE)))
+                requestBuilding(EntityType.HOUSE)
             }
         }
         return mapOf()
     }
 
     fun reservedResources() = buildingRequests.sumBy { it.type.cost() }
+
+    private fun requestBuilding(type: EntityType) {
+        buildingRequests.add(BuildingRequest(type, findPosition(type)))
+    }
 
     //TODO perfect place for index usage
     private fun monitorBuildingsRequests() {
@@ -71,8 +79,8 @@ object BuildingProductionManager : ActionProvider {
                     intersects(
                         x, x + supplySize,
                         yMax, yMax + supplySize,
-                        if (it.isBuilding()) it.position - 1 else it.position,
-                        if (it.isBuilding()) it.size() + 2 else it.size()
+                        if (it.isBuilding() && x != 0) it.position - 1 else it.position,
+                        if (it.isBuilding() && x != 0) it.size() + 2 else it.size()
                     )
                 }
                 if (noCollisions) {
@@ -85,8 +93,8 @@ object BuildingProductionManager : ActionProvider {
                     intersects(
                         xMax, xMax + supplySize,
                         y, y + supplySize,
-                        if (it.isBuilding()) it.position - 1 else it.position,
-                        if (it.isBuilding()) it.size() + 2 else it.size()
+                        if (it.isBuilding() && y != 0) it.position - 1 else it.position,
+                        if (it.isBuilding() && y != 0) it.size() + 2 else it.size()
                     )
                 }
                 if (noCollisions) {
