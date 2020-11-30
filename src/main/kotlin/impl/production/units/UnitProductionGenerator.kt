@@ -6,10 +6,10 @@ import model.EntityType
 
 object UnitProductionGenerator {
     private const val earlyGameWorkers = 8
-    private const val middleGame = 35
-    private const val lateGame = 70
-    private const val uberLateGame = 100
+    private const val middleGameWorkers = 35
+    private const val lateGameWorkers = 70
 
+    //TODO replace with function
     val nextUnitToProduce = sequence {
         while (myWorkers().count() <= earlyGameWorkers) {
             yield(EntityType.BUILDER_UNIT)
@@ -20,18 +20,12 @@ object UnitProductionGenerator {
             yield(EntityType.RANGED_UNIT)
 //            yield(EntityType.MELEE_UNIT)
 
-            if (myWorkers().count() < middleGame && resources().isNotEmpty()) {
-                yield(EntityType.BUILDER_UNIT)
-                yield(EntityType.BUILDER_UNIT)
-                yield(EntityType.BUILDER_UNIT)
-            }
-
-            if (myWorkers().count() < lateGame && resources().isNotEmpty()) {
+            if (myWorkers().count() < middleGameWorkers && resources().isNotEmpty()) {
                 yield(EntityType.BUILDER_UNIT)
                 yield(EntityType.BUILDER_UNIT)
             }
 
-            if (myWorkers().count() < uberLateGame && resources().isNotEmpty()) {
+            if (myWorkers().count() < lateGameWorkers && resources().isNotEmpty()) {
                 yield(EntityType.BUILDER_UNIT)
             }
         }

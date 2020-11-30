@@ -16,24 +16,19 @@ object BuildingProductionManager : ActionProvider {
     override fun provideActions(): Map<Int, EntityAction> {
         monitorBuildingsRequests()
         when {
-            totalSupply >= 100 && myBuildings(EntityType.RANGED_BASE).count() <= 3 && numbersOfBuildingsInQueue(EntityType.RANGED_BASE) == 0 -> {
-                buildingRequests.add(
-                    BuildingRequest(EntityType.RANGED_BASE, findPosition(EntityType.RANGED_BASE))
-                )
+            totalSupply >= 100 && myBuildings(EntityType.RANGED_BASE).count() <= 2 &&
+                    numbersOfBuildingsInQueue(EntityType.RANGED_BASE) == 0 -> {
+                buildingRequests.add(BuildingRequest(EntityType.RANGED_BASE, findPosition(EntityType.RANGED_BASE)))
             }
-            totalSupply >= 100 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 5 -> {
-                buildingRequests.add(
-                    BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE))
-                )
+            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 5 -> {
+                buildingRequests.add(BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE)))
+            }
+            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
+                buildingRequests.add(BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE)))
             }
             totalSupply < 100 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) == 0 -> {
-                buildingRequests.add(
-                    BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE))
-                )
+                buildingRequests.add(BuildingRequest(EntityType.HOUSE, findPosition(EntityType.HOUSE)))
             }
-//            availableResources() > EntityType.RANGED_BASE.cost() -> {
-//                constructBuilding(EntityType.RANGED_BASE)
-//            }
         }
         return mapOf()
     }
