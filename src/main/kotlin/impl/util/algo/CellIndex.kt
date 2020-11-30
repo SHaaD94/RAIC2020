@@ -2,6 +2,7 @@ package impl.util.algo
 
 import model.Entity
 import model.PlayerView
+import model.Vec2Int
 
 object CellIndex {
     var index: Array<Array<Entity?>> = Array(0) { Array(0) { null } }
@@ -18,4 +19,6 @@ object CellIndex {
 
         index = newIndex
     }
+
+    fun getUnit(v: Vec2Int): Entity? = index[v.x][v.y]
 }

@@ -89,6 +89,14 @@ class Entity {
 
     fun maxHP() = this.entityType.maxHP()
     fun attackRange() = this.entityType.attackRange()
+    fun damage() = this.entityType.damage()
 
     fun isBuilding() = buildingTypes.contains(this.entityType)
+
+    fun validCellsAround() = sequenceOf(
+        Vec2Int(this.position.x - 1, this.position.y),
+        Vec2Int(this.position.x, this.position.y - 1),
+        Vec2Int(this.position.x + 1, this.position.y),
+        Vec2Int(this.position.x, this.position.y + 1)
+    ).filter { it.isValid() }
 }

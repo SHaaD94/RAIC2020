@@ -4,6 +4,7 @@ import impl.*
 import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
 import impl.util.*
+import impl.util.algo.CellIndex
 import impl.util.algo.distance
 import model.*
 
@@ -52,9 +53,26 @@ object WorkersManager : ActionProvider {
         }.toMap()
 
     private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
-        freeWorkers.map { w -> w to resources().minByOrNull { w.distance(it) }!! }
-            .map { (w, r) -> w.id to attackAction(r, AutoAttack(500)) }
-            .toMap()
+//        freeWorkers.map { w -> w to resources().minByOrNull { w.distance(it) }!! }
+//            .map { (w, r) -> w.id to attackAction(r, AutoAttack(500)) }
+//            .toMap()
+        freeWorkers.mapNotNull { w ->
+            if (WorkersPF.getScore(w.position) < 0) {
+                val bestCoord =
+                    w.validCellsAround()
+                        .filter { !cellOccupied(it) }
+                        .map { it to WorkersPF.getScore(it) }
+                        .maxByOrNull { it.second }?.first ?: Vec2Int(0, 0)
+                w.id to moveAction(bestCoord, true, true)
+            } else {
+                val closestResourceWithoutEnemies =
+                    resources().filter { WorkersPF.getScore(it.position) >= 0 }
+                        .minByOrNull { w.distance(it) } ?: return@mapNotNull null
+
+
+                w.id to attackAction(closestResourceWithoutEnemies, AutoAttack(500))
+            }
+        }.toMap()
 
     private fun runTo00(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers

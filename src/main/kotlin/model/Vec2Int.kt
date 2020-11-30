@@ -1,5 +1,6 @@
 package model
 
+import impl.global.State
 import util.StreamUtil
 
 data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
@@ -29,4 +30,6 @@ data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
         if (y > other.y) return 1
         return 0
     }
+
+    fun isValid() = this.x in 0 until State.playerView.mapSize && this.y in 0 until State.playerView.mapSize
 }

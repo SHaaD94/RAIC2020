@@ -2,6 +2,7 @@ import impl.global.State
 import impl.global.initEntityStats
 import impl.micro.army.ArmyMovementManager
 import impl.micro.workers.WorkersManager
+import impl.micro.workers.WorkersPF
 import impl.production.buildings.BuildingProductionManager
 import impl.production.units.UnitProductionManager
 import impl.util.algo.CellIndex
@@ -22,6 +23,7 @@ class MyStrategy {
         initEntityStats(playerView)
         State.update(playerView)
         CellIndex.update(playerView)
+        WorkersPF.update(playerView)
 
         val resActions = mutableMapOf<Int, EntityAction>()
 
