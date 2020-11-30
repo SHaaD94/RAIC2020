@@ -11,7 +11,7 @@ class RepairProperties {
         this.power = power
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): RepairProperties {
             val result = RepairProperties()
             result.validTargets = Array(StreamUtil.readInt(stream), {
@@ -35,7 +35,7 @@ class RepairProperties {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, validTargets.size)
         for (validTargetsElement in validTargets) {

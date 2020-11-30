@@ -3,10 +3,10 @@ package model
 import util.StreamUtil
 
 abstract class ServerMessage {
-    @Throws(java.io.IOException::class)
+
     abstract fun writeTo(stream: java.io.OutputStream)
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): ServerMessage {
             when (StreamUtil.readInt(stream)) {
                 GetAction.TAG -> return GetAction.readFrom(stream)
@@ -27,7 +27,7 @@ abstract class ServerMessage {
         }
         companion object {
             val TAG = 0
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): GetAction {
                 val result = GetAction()
                 result.playerView = model.PlayerView.readFrom(stream)
@@ -35,7 +35,7 @@ abstract class ServerMessage {
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             playerView.writeTo(stream)
@@ -47,13 +47,13 @@ abstract class ServerMessage {
         constructor() {}
         companion object {
             val TAG = 1
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Finish {
                 val result = Finish()
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
         }
@@ -67,14 +67,14 @@ abstract class ServerMessage {
         }
         companion object {
             val TAG = 2
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): DebugUpdate {
                 val result = DebugUpdate()
                 result.playerView = model.PlayerView.readFrom(stream)
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             playerView.writeTo(stream)

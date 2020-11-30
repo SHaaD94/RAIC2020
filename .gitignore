@@ -12,6 +12,12 @@ out/
 
 aicup2020.iml
 
-runner/aicup2020-preferences.json
+target/
 
-.target/
+runner/test_quickstartguy_r1_1x3/res.json
+runner/aicup2020-preferences.json
+runner/config-seed.json
+
+release/
+
+venv/

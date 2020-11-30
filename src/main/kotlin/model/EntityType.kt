@@ -1,8 +1,8 @@
 package model
 
-import util.StreamUtil
+import impl.global.entityStats
 
-enum class EntityType private constructor(var tag: Int) {
+enum class EntityType(var tag: Int) {
     WALL(0),
     HOUSE(1),
     BUILDER_BASE(2),
@@ -14,3 +14,11 @@ enum class EntityType private constructor(var tag: Int) {
     RESOURCE(8),
     TURRET(9)
 }
+
+fun EntityType.size() = entityStats[this]!!.size
+fun EntityType.maxHP() = entityStats[this]!!.maxHealth
+fun EntityType.cost() = entityStats[this]!!.cost
+fun EntityType.attackRange() = entityStats[this]!!.attack?.attackRange ?: 1
+fun EntityType.populationProvide() = entityStats[this]!!.populationProvide
+fun EntityType.populationUse() = entityStats[this]!!.populationUse
+

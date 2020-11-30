@@ -11,7 +11,7 @@ class BuildAction {
         this.position = position
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): BuildAction {
             val result = BuildAction()
             when (StreamUtil.readInt(stream)) {
@@ -31,7 +31,7 @@ class BuildAction {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, entityType.tag)
         position.writeTo(stream)

@@ -3,10 +3,10 @@ package model
 import util.StreamUtil
 
 abstract class ClientMessage {
-    @Throws(java.io.IOException::class)
+
     abstract fun writeTo(stream: java.io.OutputStream)
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): ClientMessage {
             when (StreamUtil.readInt(stream)) {
                 DebugMessage.TAG -> return DebugMessage.readFrom(stream)
@@ -26,14 +26,14 @@ abstract class ClientMessage {
         }
         companion object {
             val TAG = 0
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): DebugMessage {
                 val result = DebugMessage()
                 result.command = model.DebugCommand.readFrom(stream)
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             command.writeTo(stream)
@@ -48,14 +48,14 @@ abstract class ClientMessage {
         }
         companion object {
             val TAG = 1
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): ActionMessage {
                 val result = ActionMessage()
                 result.action = model.Action.readFrom(stream)
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             action.writeTo(stream)
@@ -66,13 +66,13 @@ abstract class ClientMessage {
         constructor() {}
         companion object {
             val TAG = 2
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): DebugUpdateDone {
                 val result = DebugUpdateDone()
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
         }
@@ -82,13 +82,13 @@ abstract class ClientMessage {
         constructor() {}
         companion object {
             val TAG = 3
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): RequestDebugState {
                 val result = RequestDebugState()
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
         }

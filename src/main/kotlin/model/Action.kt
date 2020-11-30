@@ -9,7 +9,7 @@ class Action {
         this.entityActions = entityActions
     }
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): Action {
             val result = Action()
             val entityActionsSize = StreamUtil.readInt(stream)
@@ -24,7 +24,7 @@ class Action {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeInt(stream, entityActions.size)
         for (entityActionsEntry in entityActions) {

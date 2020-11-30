@@ -7,15 +7,16 @@ class EntityAction {
     var buildAction: model.BuildAction? = null
     var attackAction: model.AttackAction? = null
     var repairAction: model.RepairAction? = null
+
     constructor() {}
-    constructor(moveAction: model.MoveAction?, buildAction: model.BuildAction?, attackAction: model.AttackAction?, repairAction: model.RepairAction?) {
+    constructor(moveAction: model.MoveAction? = null, buildAction: model.BuildAction? = null, attackAction: model.AttackAction? = null, repairAction: model.RepairAction? = null) {
         this.moveAction = moveAction
         this.buildAction = buildAction
         this.attackAction = attackAction
         this.repairAction = repairAction
     }
+
     companion object {
-        @Throws(java.io.IOException::class)
         fun readFrom(stream: java.io.InputStream): EntityAction {
             val result = EntityAction()
             if (StreamUtil.readBoolean(stream)) {
@@ -41,7 +42,7 @@ class EntityAction {
             return result
         }
     }
-    @Throws(java.io.IOException::class)
+
     fun writeTo(stream: java.io.OutputStream) {
         val moveAction = moveAction;
         if (moveAction == null) {

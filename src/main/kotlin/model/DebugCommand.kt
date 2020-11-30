@@ -3,10 +3,10 @@ package model
 import util.StreamUtil
 
 abstract class DebugCommand {
-    @Throws(java.io.IOException::class)
+
     abstract fun writeTo(stream: java.io.OutputStream)
     companion object {
-        @Throws(java.io.IOException::class)
+
         fun readFrom(stream: java.io.InputStream): DebugCommand {
             when (StreamUtil.readInt(stream)) {
                 Add.TAG -> return Add.readFrom(stream)
@@ -24,14 +24,14 @@ abstract class DebugCommand {
         }
         companion object {
             val TAG = 0
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Add {
                 val result = Add()
                 result.data = model.DebugData.readFrom(stream)
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
             data.writeTo(stream)
@@ -42,13 +42,13 @@ abstract class DebugCommand {
         constructor() {}
         companion object {
             val TAG = 1
-            @Throws(java.io.IOException::class)
+
             fun readFrom(stream: java.io.InputStream): Clear {
                 val result = Clear()
                 return result
             }
         }
-        @Throws(java.io.IOException::class)
+
         override fun writeTo(stream: java.io.OutputStream) {
             StreamUtil.writeInt(stream, TAG)
         }
