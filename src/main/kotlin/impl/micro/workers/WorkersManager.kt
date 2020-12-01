@@ -1,6 +1,7 @@
 package impl.micro.workers
 
 import impl.*
+import impl.global.State
 import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
 import impl.util.*
@@ -69,8 +70,10 @@ object WorkersManager : ActionProvider {
                     resources().filter { WorkersPF.getScore(it.position) >= 0 }
                         .minByOrNull { w.distance(it) } ?: return@mapNotNull null
 
-
-                w.id to attackAction(closestResourceWithoutEnemies, AutoAttack(500))
+                w.id to if (w.distance(closestResourceWithoutEnemies) < State.playerView.maxPathfindNodes)
+                    moveAction(closestResourceWithoutEnemies.position, true, true)
+                else
+                    attackAction(closestResourceWithoutEnemies, AutoAttack(State.playerView.maxPathfindNodes))
             }
         }.toMap()
 
