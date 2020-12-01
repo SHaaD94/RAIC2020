@@ -42,11 +42,9 @@ object ArmyMovementManager : ActionProvider {
 
     private fun earlyGame(resultActions: MutableMap<Int, EntityAction>, mainBase: Entity) {
         myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-            val e = enemies().map { it to it.distance(mainBase) }.filter { it.second < 20 }
-                .minByOrNull { it.second }?.first ?: return@mapNotNull (u.id to moveAction(
-                Vec2Int(15, 15),
-                true
-            ))
+            val e = enemies().map { it to it.distance(mainBase) }.filter { it.second < 40 }
+                .minByOrNull { it.second }
+                ?.first ?: return@mapNotNull (u.id to moveAction(Vec2Int(15, 15), true))
             u.id to u.attackingMove(e)
         }.forEach { resultActions[it.first] = it.second }
     }

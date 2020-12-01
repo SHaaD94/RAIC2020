@@ -34,7 +34,7 @@ fun fillShortestPaths(startingPoint: Vec2Int): Array<Array<Int?>> {
     return res
 }
 
-fun findClosestMineral(startingPoint: Vec2Int, maxCells: Int = 100/*, shouldBeSafe: Boolean = true*/): Entity? {
+fun findClosestMineral(startingPoint: Vec2Int, maxCells: Int = 500/*, shouldBeSafe: Boolean = true*/): Entity? {
     val visited = mutableSetOf<Vec2Int>()
     val toVisit = LinkedList<Vec2Int>()
 
