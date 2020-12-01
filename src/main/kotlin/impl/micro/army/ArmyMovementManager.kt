@@ -16,7 +16,7 @@ object ArmyMovementManager : ActionProvider {
     private val unitId2Group = mutableMapOf<Int, ArmyGroup>()
 
     override fun provideActions(): Map<Int, EntityAction> {
-        if (currentTick() % 5 == 0) createGroupIfPossible()?.let { groups.add(it) }
+        createGroupIfPossible()?.let { groups.add(it) }
 
         val resultActions = mutableMapOf<Int, EntityAction>()
 
