@@ -50,13 +50,10 @@ object WorkersManager : ActionProvider {
 
     private fun repairBuildings(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
-            freeWorkers.sortedBy { it.distance(b) }.take(2).map { it.id to repairBuilding(it, b) }
+            freeWorkers.sortedBy { it.distance(b) }.take(b.maxHP() / 50).map { it.id to repairBuilding(it, b) }
         }.toMap()
 
     private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
-//        freeWorkers.map { w -> w to resources().minByOrNull { w.distance(it) }!! }
-//            .map { (w, r) -> w.id to attackAction(r, AutoAttack(500)) }
-//            .toMap()
         freeWorkers.mapNotNull { w ->
             if (WorkersPF.getScore(w.position) < 0) {
                 val bestCoord =

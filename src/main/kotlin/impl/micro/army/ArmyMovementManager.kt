@@ -2,12 +2,16 @@ package impl.micro.army
 
 import impl.*
 import impl.global.State
+import impl.global.State.totalSupply
 import impl.util.algo.distance
 import impl.util.attackAction
+import impl.util.attackingMove
 import impl.util.moveAction
 import model.AutoAttack
 import model.EntityAction
+import model.EntityType
 import model.Vec2Int
+import kotlin.math.roundToInt
 
 object ArmyMovementManager : ActionProvider {
     private const val minGroupSize = 10
@@ -17,13 +21,18 @@ object ArmyMovementManager : ActionProvider {
 
         autoAttack(resultActions)
 
-        myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-            val e = enemies().minByOrNull { u.distance(it) } ?: return@mapNotNull null
 
-            u.id to if (e.distance(u) < State.maxPathfindNodes)
-                moveAction(e.position, true, false)
-            else
-                attackAction(e, AutoAttack(State.maxPathfindNodes))
+        myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
+            // don't rush into fight while we don't have income
+            val mainBase = myBuildings(EntityType.BUILDER_BASE).firstOrNull()
+            if (myWorkers().count() < 35 && mainBase != null) {
+                val e = enemies().map { it to it.distance(mainBase) }.filter { it.second < 20 }
+                    .minByOrNull { it.second }?.first ?: return@mapNotNull (u.id to moveAction(Vec2Int(20, 20), true))
+                u.id to u.attackingMove(e)
+            } else {
+                val e = enemies().minByOrNull { u.distance(it) } ?: return@mapNotNull null
+                u.id to u.attackingMove(e)
+            }
         }.forEach { resultActions[it.first] = it.second }
 
         return resultActions
