@@ -21,7 +21,6 @@ object ArmyMovementManager : ActionProvider {
 
         autoAttack(resultActions)
 
-
         myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
             // don't rush into fight while we don't have income
             val mainBase = myBuildings(EntityType.BUILDER_BASE).firstOrNull()
