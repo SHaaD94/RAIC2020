@@ -5,7 +5,7 @@ import impl.global.State
 import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
 import impl.util.*
-import impl.util.algo.CellIndex
+import impl.util.algo.bfs.findClosestMineral
 import impl.util.algo.distance
 import model.*
 
@@ -64,13 +64,10 @@ object WorkersManager : ActionProvider {
                 w.id to moveAction(bestCoord, true, true)
             } else {
                 val closestResourceWithoutEnemies =
-                    resources().filter { WorkersPF.getScore(it.position) >= 0 }
+                    findClosestMineral(w.position) ?: resources().filter { WorkersPF.getScore(it.position) >= 0 }
                         .minByOrNull { w.distance(it) } ?: return@mapNotNull null
 
-                w.id to if (w.distance(closestResourceWithoutEnemies) < State.playerView.maxPathfindNodes)
-                    moveAction(closestResourceWithoutEnemies.position, true, true)
-                else
-                    attackAction(closestResourceWithoutEnemies, AutoAttack(State.playerView.maxPathfindNodes))
+                w.id to w.attackingMove(closestResourceWithoutEnemies, true, true)
             }
         }.toMap()
 
