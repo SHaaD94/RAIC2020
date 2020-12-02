@@ -25,13 +25,13 @@ object BuildingProductionManager : ActionProvider {
                     numbersOfBuildingsInQueue(EntityType.RANGED_BASE) == 0 -> {
                 requestBuilding(EntityType.RANGED_BASE)
             }
-            totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) == 0 -> {
+            totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
                 requestBuilding(EntityType.HOUSE)
             }
-            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
+            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 4 -> {
                 requestBuilding(EntityType.HOUSE)
             }
-            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 5 -> {
+            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 7 -> {
                 requestBuilding(EntityType.HOUSE)
             }
         }

@@ -90,4 +90,6 @@ data class Entity(
 
 
     fun isEnemy() = this.playerId != null && this.playerId != myPlayerId()
+
+    fun producingUnit(): EntityType? = entityStats[this.entityType]!!.build?.options?.toList()?.firstOrNull()
 }
