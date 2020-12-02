@@ -85,5 +85,9 @@ data class Entity(
 
     fun cellsWithinDistance(distance: Int): Sequence<Vec2Int> = this.position.cellsWithinDistance(distance)
 
+    fun cellsCovered(): Sequence<Vec2Int> =
+        this.position.cellsCovered(this.size())
+
+
     fun isEnemy() = this.playerId != null && this.playerId != myPlayerId()
 }

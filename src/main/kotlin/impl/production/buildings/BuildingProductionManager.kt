@@ -3,6 +3,7 @@ package impl.production.buildings
 import impl.*
 import impl.global.State.availableSupply
 import impl.global.State.totalSupply
+import impl.util.algo.CellIndex
 import impl.util.intersects
 import model.*
 import java.util.*
@@ -46,7 +47,7 @@ object BuildingProductionManager : ActionProvider {
     //TODO perfect place for index usage
     private fun monitorBuildingsRequests() {
         val finishedRequests = buildingRequests.filter { br ->
-            myBuildings(br.type).firstOrNull { it.position == br.coordinate && it.active } != null
+            CellIndex.getUnit(br.coordinate)?.entityType == br.type
         }
         buildingRequests.removeAll(finishedRequests)
 
@@ -65,7 +66,7 @@ object BuildingProductionManager : ActionProvider {
     }
 
     private fun numbersOfBuildingsInQueue(type: EntityType) =
-        buildingRequests.count { it.type == type }
+        buildingRequests.count { it.type == type } + myBuildings(type).count { !it.active }
 
     //TODO place for optimizations
     private fun findPosition(buildingType: EntityType): Vec2Int {
