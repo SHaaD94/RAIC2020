@@ -23,10 +23,10 @@ object ArmyMovementManager : ActionProvider {
 
                 val closestEnemy = enemies().minByOrNull { u.distance(it) } ?: return@mapNotNull null
                 u.id to
-                        if (u.enemiesWithinDistance(7).any()) {
+                        if (u.enemiesWithinDistance(10).any()) {
                             if (FightSimulation.predictResult(
-                                    u.alliesWithinDistance(10).toList(),
-                                    u.enemiesWithinDistance(10).toList()
+                                    u.alliesWithinDistance(7).filter { it.damage() > 1 }.toList(),
+                                    u.enemiesWithinDistance(10).filter { it.damage() > 1 }.toList()
                                 ) == Win
                             ) u.moveAndAttack(closestEnemy)
                             else u.moveAction(Vec2Int(0, 0), true)
