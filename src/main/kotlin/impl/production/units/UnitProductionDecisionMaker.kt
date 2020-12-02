@@ -1,6 +1,7 @@
 package impl.production.units
 
 import impl.*
+import impl.global.State
 import impl.util.algo.math.FastMath.max
 import model.Entity
 import model.EntityType
@@ -9,7 +10,7 @@ import kotlin.math.min
 
 object UnitProductionDecisionMaker {
     private const val maxWorkers = 70
-    private const val defenseDistance = 50
+    private const val defenseDistance = 60
 
     fun shouldProduceUnit(entity: Entity): Boolean {
         if (entity.entityType == EntityType.MELEE_BASE) return false
@@ -28,7 +29,7 @@ object UnitProductionDecisionMaker {
             }
         } else {
             when (entity.entityType) {
-                EntityType.RANGED_BASE -> myArmy().count() < enemies().filter { it.damage() > 1 }.count() * 2.0
+                EntityType.RANGED_BASE -> myArmy().count() < enemies().filter { it.damage() > 1 }.count() * 2.0 || State.playerView.fogOfWar
                 EntityType.BUILDER_BASE -> myWorkers().count() < min(resources().count(), maxWorkers)
                 else -> true
             }

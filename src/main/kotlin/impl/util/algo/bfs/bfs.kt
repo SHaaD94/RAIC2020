@@ -2,6 +2,7 @@ package impl.util.algo.bfs
 
 import impl.micro.workers.WorkersPF
 import impl.util.algo.CellIndex
+import impl.util.algo.distance
 import impl.util.cellOccupied
 import model.Entity
 import model.EntityType
@@ -34,7 +35,7 @@ fun fillShortestPaths(startingPoint: Vec2Int): Array<Array<Int?>> {
     return res
 }
 
-fun findClosestMineral(startingPoint: Vec2Int, maxCells: Int = 500/*, shouldBeSafe: Boolean = true*/): Entity? {
+fun findClosestMineral(startingPoint: Vec2Int, maxCells: Int = 10/*, shouldBeSafe: Boolean = true*/): Entity? {
     val visited = mutableSetOf<Vec2Int>()
     val toVisit = LinkedList<Vec2Int>()
 
@@ -42,9 +43,9 @@ fun findClosestMineral(startingPoint: Vec2Int, maxCells: Int = 500/*, shouldBeSa
 
     var iter = 0
     while (toVisit.isNotEmpty()) {
-        if (iter == maxCells) return null
-
         val cur = toVisit.poll()
+
+        if (cur.distance(startingPoint) >= maxCells) continue
 
         val curUnit = CellIndex.getUnit(cur)
         if (curUnit?.entityType == EntityType.RESOURCE && WorkersPF.getScore(cur) == 0) return curUnit

@@ -3,6 +3,7 @@ package impl.production.units
 import impl.*
 import impl.global.entityStats
 import impl.production.buildings.BuildingProductionManager
+import impl.util.algo.bfs.findClosestMineral
 import impl.util.algo.distance
 import impl.util.cellOccupied
 import impl.util.cellsAround
@@ -21,8 +22,13 @@ object UnitProductionManager : ActionProvider {
             .mapNotNull { b ->
                 val unitToProduce = b.producingUnit()!!
                 val target: Vec2Int = when (unitToProduce) {
-                    BUILDER_UNIT -> BuildingProductionManager.buildingRequests.map { it.coordinate }
-                        .plus(resources().map { it.position }).minByOrNull { b.distance(it) }
+                    BUILDER_UNIT ->
+                        //use bfs to find closest minerals
+                        cellsAround(b).filter { !cellOccupied(it) }
+                            .mapNotNull { findClosestMineral(it) }.firstOrNull()?.position
+                        //if not successful find closest point of interest by distance
+                            ?: BuildingProductionManager.buildingRequests.map { it.coordinate }
+                                .plus(resources().map { it.position }).minByOrNull { b.distance(it) }
                     RANGED_UNIT, MELEE_UNIT -> enemies().minByOrNull { b.distance(it) }?.position
                     else -> null
                 } ?: Vec2Int(40, 40)
