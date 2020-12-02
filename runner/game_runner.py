@@ -56,7 +56,11 @@ def run_games(folder, repeats):
                                            '--config', f'{folder}/config.json',
                                            '--save-results', f'{folder}/res.json'])
 
-        for p in players:
+        _ = subprocess.Popen(['java',
+                              '-jar',
+                              current_version_path, '127.0.0.1', str(players[0]['Tcp']['port'])])
+
+        for p in players[1:]:
             port = p['Tcp']['port']
             if p['Tcp'] is not None:
                 _ = subprocess.Popen(['java',

@@ -17,9 +17,9 @@ fun Entity.moveAction(target: Vec2Int, findClosestPosition: Boolean = false, bre
 fun Entity.moveAndAttack(
     target: Entity,
     findClosestPosition: Boolean = true,
-    breakThrough: Boolean = false,
+    breakThrough: Boolean = true,
     autoAttack: AutoAttack? = AutoAttack(State.maxPathfindNodes, arrayOf())
-) = if (this.distance(target) > 15) {
+) = if (this.distance(target) > 5) {
     moveAction(target.position, findClosestPosition, breakThrough)
 } else {
     attackAction(target, autoAttack)

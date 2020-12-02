@@ -19,7 +19,7 @@ object UnitProductionGenerator {
         while (true) {
             yield(EntityType.RANGED_UNIT)
             yield(EntityType.RANGED_UNIT)
-            yield(EntityType.MELEE_UNIT)
+//            yield(EntityType.MELEE_UNIT)
 
             if (myWorkers().count() < middleGame && resources().isNotEmpty()) {
                 yield(EntityType.BUILDER_UNIT)

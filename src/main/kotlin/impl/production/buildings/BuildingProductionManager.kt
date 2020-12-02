@@ -18,18 +18,18 @@ object BuildingProductionManager : ActionProvider {
         when {
             myBuildings(EntityType.BUILDER_BASE).count() == 0 ->
                 requestBuilding(EntityType.BUILDER_BASE)
-            myBuildings(EntityType.RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
-                requestBuilding(EntityType.RANGED_BASE)
+//            myBuildings(EntityType.RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
+//                requestBuilding(EntityType.RANGED_BASE)
             myBuildings(EntityType.MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
                 requestBuilding(EntityType.MELEE_BASE)
             totalSupply >= 100 && myBuildings(EntityType.RANGED_BASE).count() < 2 &&
                     numbersOfBuildingsInQueue(EntityType.RANGED_BASE) == 0 -> {
                 requestBuilding(EntityType.RANGED_BASE)
             }
-            totalSupply >= 100 && myBuildings(EntityType.MELEE_BASE).count() < 2 &&
-                    numbersOfBuildingsInQueue(EntityType.MELEE_BASE) == 0 -> {
-                requestBuilding(EntityType.MELEE_BASE)
-            }
+//            totalSupply >= 100 && myBuildings(EntityType.MELEE_BASE).count() < 2 &&
+//                    numbersOfBuildingsInQueue(EntityType.MELEE_BASE) == 0 -> {
+//                requestBuilding(EntityType.MELEE_BASE)
+//            }
             totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 5 -> {
                 requestBuilding(EntityType.HOUSE)
             }

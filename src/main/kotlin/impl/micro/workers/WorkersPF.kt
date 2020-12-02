@@ -20,7 +20,7 @@ object WorkersPF {
             }
         }
 
-        val enemyRangeThreshold = 7
+        val enemyRangeThreshold = 5
 
         enemies()
             .filter { it.damage() != 0 }
