@@ -45,6 +45,10 @@ def parse_game_result(res_file):
 
 def run_games(folder, repeats):
     games = []
+    players = []
+    with open(f'{folder}/config.json') as json_file:
+        players = json.load(json_file)['players']
+
     for i in range(repeats):
         print(f'Starting game number {i}')
         runner_process = subprocess.Popen(['./aicup2020',
@@ -52,9 +56,12 @@ def run_games(folder, repeats):
                                            '--config', f'{folder}/config.json',
                                            '--save-results', f'{folder}/res.json'])
 
-        _ = subprocess.Popen(['java',
-                              '-jar',
-                              current_version_path, '127.0.0.1', '31001'])
+        for p in players:
+            port = p['Tcp']['port']
+            if p['Tcp'] is not None:
+                _ = subprocess.Popen(['java',
+                                      '-jar',
+                                      f'{folder}/v.jar', '127.0.0.1', f'{port}'])
 
         runner_process.wait()
 
