@@ -56,12 +56,12 @@ object WorkersManager : ActionProvider {
     private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers.mapNotNull { w ->
             if (WorkersPF.getScore(w.position) < 0) {
-                val bestCoord =
-                    w.validCellsAround()
-                        .filter { !cellOccupied(it) }
-                        .map { it to WorkersPF.getScore(it) }
-                        .maxByOrNull { it.second }?.first ?: Vec2Int(0, 0)
-                w.id to w.moveAction(bestCoord, true, true)
+//                val bestCoord =
+//                    w.validCellsAround()
+//                        .filter { !cellOccupied(it) }
+//                        .map { it to WorkersPF.getScore(it) }
+//                        .maxByOrNull { it.second }?.first ?: Vec2Int(0, 0)
+                w.id to w.moveAction(Vec2Int(), true, true)
             } else {
                 val closestResourceWithoutEnemies =
                     resources().filter { WorkersPF.getScore(it.position) >= 0 }

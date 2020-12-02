@@ -20,10 +20,10 @@ object WorkersPF {
             }
         }
 
-        val enemyRangeThreshold = 5
+        val enemyRangeThreshold = 6
 
         enemies()
-            .filter { it.damage() != 0 }
+            .filter { it.damage() > 1 }
             .filter { it.entityType != EntityType.BUILDER_UNIT }
             .forEach { e ->
                 for (x in -enemyRangeThreshold until enemyRangeThreshold) {
