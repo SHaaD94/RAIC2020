@@ -2,33 +2,20 @@ package model
 
 import impl.buildingTypes
 import impl.global.entityStats
+import impl.myPlayerId
+import impl.unitTypes
+import impl.util.algo.distance
 import util.StreamUtil
+import java.util.*
 
-class Entity {
-    var id: Int = 0
-    var playerId: Int? = null
-    lateinit var entityType: model.EntityType
-    lateinit var position: model.Vec2Int
-    var health: Int = 0
+data class Entity(
+    var id: Int = 0,
+    var playerId: Int? = null,
+    var entityType: model.EntityType = EntityType.WALL,
+    var position: model.Vec2Int = Vec2Int(0, 0),
+    var health: Int = 0,
     var active: Boolean = false
-
-    constructor() {}
-    constructor(
-        id: Int,
-        playerId: Int?,
-        entityType: model.EntityType,
-        position: model.Vec2Int,
-        health: Int,
-        active: Boolean
-    ) {
-        this.id = id
-        this.playerId = playerId
-        this.entityType = entityType
-        this.position = position
-        this.health = health
-        this.active = active
-    }
-
+) {
     companion object {
 
         fun readFrom(stream: java.io.InputStream): Entity {
@@ -89,6 +76,14 @@ class Entity {
 
     fun maxHP() = this.entityType.maxHP()
     fun attackRange() = this.entityType.attackRange()
+    fun damage() = this.entityType.damage()
 
     fun isBuilding() = buildingTypes.contains(this.entityType)
+    fun isUnit() = unitTypes.contains(this.entityType)
+
+    fun validCellsAround() = this.position.validCellsAround()
+
+    fun cellsWithinDistance(distance: Int): Sequence<Vec2Int> = this.position.cellsWithinDistance(distance)
+
+    fun isEnemy() = this.playerId != null && this.playerId != myPlayerId()
 }

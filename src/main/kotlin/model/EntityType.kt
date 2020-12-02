@@ -18,7 +18,8 @@ enum class EntityType(var tag: Int) {
 fun EntityType.size() = entityStats[this]!!.size
 fun EntityType.maxHP() = entityStats[this]!!.maxHealth
 fun EntityType.cost() = entityStats[this]!!.cost
-fun EntityType.attackRange() = entityStats[this]!!.attack?.attackRange ?: 1
+fun EntityType.attackRange() = entityStats[this]!!.attack?.attackRange ?: 0
+fun EntityType.damage() = entityStats[this]!!.attack?.damage ?: 0
 fun EntityType.populationProvide() = entityStats[this]!!.populationProvide
 fun EntityType.populationUse() = entityStats[this]!!.populationUse
 

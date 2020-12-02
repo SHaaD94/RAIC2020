@@ -1,6 +1,9 @@
 package model
 
+import impl.global.State
+import impl.util.algo.distance
 import util.StreamUtil
+import java.util.*
 
 data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
     companion object {
@@ -29,4 +32,27 @@ data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
         if (y > other.y) return 1
         return 0
     }
+
+    fun isValid() = this.x in 0 until State.playerView.mapSize && this.y in 0 until State.playerView.mapSize
+
+    fun cellsWithinDistance(distance: Int): Sequence<Vec2Int> {
+        val res = LinkedList<Vec2Int>()
+        for (x in this.x - distance..this.x + distance) {
+            for (y in this.y - distance..this.y + distance) {
+                val c = Vec2Int(x, y)
+                if (!c.isValid()) continue
+
+                if (this.distance(c) <= distance) res.add(c)
+            }
+        }
+        return res.asSequence()
+    }
+
+    fun validCellsAround() = sequenceOf(
+        Vec2Int(this.x - 1, this.y),
+        Vec2Int(this.x, this.y - 1),
+        Vec2Int(this.x + 1, this.y),
+        Vec2Int(this.x, this.y + 1)
+    ).filter { it.isValid() }
+
 }

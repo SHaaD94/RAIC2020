@@ -10,8 +10,11 @@ object State {
     var totalSupply = 0
     var playerView: PlayerView = PlayerView()
 
+    var maxPathfindNodes = 0
+
     fun update(playerView: PlayerView) {
         this.playerView = playerView
+        this.maxPathfindNodes = playerView.maxPathfindNodes
 
         this.totalSupply = 0
         this.availableSupply = myEntities()

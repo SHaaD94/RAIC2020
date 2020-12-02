@@ -2,9 +2,11 @@ package impl
 
 import impl.global.State.playerView
 import impl.production.buildings.BuildingProductionManager
+import impl.util.algo.CellIndex
 import model.Entity
 import model.EntityType
 import model.EntityType.*
+import model.Vec2Int
 
 val unitTypes = setOf(BUILDER_UNIT, MELEE_UNIT, RANGED_UNIT)
 val buildingTypes = setOf(WALL, HOUSE, BUILDER_BASE, MELEE_BASE, RANGED_BASE, TURRET)
@@ -36,6 +38,19 @@ fun resources(): List<Entity> = playerView.entities.filter { it.entityType == RE
 fun myArmy() = myUnits().filter { it.entityType == RANGED_UNIT || it.entityType == MELEE_UNIT }
 
 fun enemies() = entities().filter { it.playerId != null && it.playerId != myPlayerId() }
+
+fun Vec2Int.entitiesWithinDistance(d: Int) =
+    this.cellsWithinDistance(d).mapNotNull { CellIndex.getUnit(it) }.distinctBy { it.id }
+
+fun Entity.entitiesWithinDistance(d: Int) = this.position.entitiesWithinDistance(d)
+
+fun Vec2Int.enemiesWithinDistance(d: Int) = this.entitiesWithinDistance(d).filter { it.isEnemy() }
+
+fun Entity.enemiesWithinDistance(d: Int) = this.position.enemiesWithinDistance(d)
+
+fun Vec2Int.alliesWithinDistance(d: Int) = this.entitiesWithinDistance(d).filter { it.playerId == myPlayerId() }
+
+fun Entity.alliesWithinDistance(d: Int) = this.position.alliesWithinDistance(d)
 
 //--------------------------------------------------------
 

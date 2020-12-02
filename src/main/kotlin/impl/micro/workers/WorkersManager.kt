@@ -1,9 +1,11 @@
 package impl.micro.workers
 
 import impl.*
+import impl.global.State
 import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
 import impl.util.*
+import impl.util.algo.bfs.findClosestMineral
 import impl.util.algo.distance
 import model.*
 
@@ -48,13 +50,26 @@ object WorkersManager : ActionProvider {
 
     private fun repairBuildings(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
-            freeWorkers.sortedBy { it.distance(b) }.take(2).map { it.id to repairBuilding(it, b) }
+            freeWorkers.sortedBy { it.distance(b) }.take(b.maxHP() / 50).map { it.id to repairBuilding(it, b) }
         }.toMap()
 
     private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
-        freeWorkers.map { w -> w to resources().minByOrNull { w.distance(it) }!! }
-            .map { (w, r) -> w.id to attackAction(r, AutoAttack(500)) }
-            .toMap()
+        freeWorkers.mapNotNull { w ->
+            if (WorkersPF.getScore(w.position) < 0) {
+                val bestCoord =
+                    w.validCellsAround()
+                        .filter { !cellOccupied(it) }
+                        .map { it to WorkersPF.getScore(it) }
+                        .maxByOrNull { it.second }?.first ?: Vec2Int(0, 0)
+                w.id to moveAction(bestCoord, true, true)
+            } else {
+                val closestResourceWithoutEnemies =
+                    findClosestMineral(w.position) ?: resources().filter { WorkersPF.getScore(it.position) >= 0 }
+                        .minByOrNull { w.distance(it) } ?: return@mapNotNull null
+
+                w.id to w.attackingMove(closestResourceWithoutEnemies, true, true)
+            }
+        }.toMap()
 
     private fun runTo00(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers
