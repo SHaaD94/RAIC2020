@@ -56,24 +56,27 @@ object WorkersManager : ActionProvider {
     private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers.mapNotNull { w ->
             if (WorkersPF.getScore(w.position) < 0) {
-                val bestCoord =
-                    w.validCellsAround()
-                        .filter { !cellOccupied(it) }
-                        .map { it to WorkersPF.getScore(it) }
-                        .maxByOrNull { it.second }?.first ?: Vec2Int(0, 0)
-                w.id to moveAction(bestCoord, true, true)
+//                val bestCoord =
+//                    w.validCellsAround()
+//                        .filter { !cellOccupied(it) }
+//                        .map { it to WorkersPF.getScore(it) }
+//                        .maxByOrNull { it.second }?.first ?: Vec2Int(0, 0)
+                w.id to w.moveAction(Vec2Int(), true, true)
             } else {
                 val closestResourceWithoutEnemies =
-                    findClosestMineral(w.position) ?: resources().filter { WorkersPF.getScore(it.position) >= 0 }
+                    resources().filter { WorkersPF.getScore(it.position) >= 0 }
                         .minByOrNull { w.distance(it) } ?: return@mapNotNull null
 
-                w.id to w.attackingMove(closestResourceWithoutEnemies, true, true)
+                w.id to w.attackAction(
+                    closestResourceWithoutEnemies,
+                    AutoAttack(State.maxPathfindNodes, EntityType.values())
+                )
             }
         }.toMap()
 
     private fun runTo00(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers
-            .map { w -> w.id to moveAction(Vec2Int(0, 0), findClosestPosition = true, breakThrough = false) }
+            .map { w -> w.id to w.moveAction(Vec2Int(0, 0), findClosestPosition = true, breakThrough = false) }
             .toMap()
 
     private fun repairBuilding(worker: Entity, target: Entity): EntityAction {
@@ -82,7 +85,7 @@ object WorkersManager : ActionProvider {
         return if (borderCells.contains(worker.position)) EntityAction(
             repairAction = RepairAction(target.id)
             // otherwise go to the nearest one
-        ) else moveAction(
+        ) else worker.moveAction(
             borderCells.filter { !cellOccupied(it, worker) }.minByOrNull { it.distance(worker.position) }
             //FIXME HACK WITH DEFAULT VALUE
                 ?: target.position,
@@ -98,7 +101,7 @@ object WorkersManager : ActionProvider {
         return if (borderCells.contains(worker.position)) EntityAction(
             buildAction = BuildAction(type, pos)
             // otherwise go to the nearest one
-        ) else moveAction(borderCells.filter { !cellOccupied(it, worker) }
+        ) else worker.moveAction(borderCells.filter { !cellOccupied(it, worker) }
             .minByOrNull { it.distance(worker.position) }
         //FIXME HACK WITH DEFAULT VALUE
             ?: pos, true, true)

@@ -18,7 +18,6 @@ object State {
 
         this.totalSupply = 0
         this.availableSupply = myEntities()
-            //TODO disabling this stuff, because of chaotic supply depo production
             .filter { it.active }
             .onEach { this.totalSupply += it.entityType.populationProvide() }
             .map {

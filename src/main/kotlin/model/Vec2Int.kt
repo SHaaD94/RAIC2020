@@ -55,4 +55,9 @@ data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
         Vec2Int(this.x, this.y + 1)
     ).filter { it.isValid() }
 
+    fun cellsCovered(size: Int): Sequence<Vec2Int> {
+        return (this.x until this.x + size).asSequence()
+            .flatMap { x -> (this.y until this.y + size).asSequence().map { y -> Vec2Int(x, y) } }
+            .filter { it.isValid() }
+    }
 }

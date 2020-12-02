@@ -22,4 +22,7 @@ fun EntityType.attackRange() = entityStats[this]!!.attack?.attackRange ?: 0
 fun EntityType.damage() = entityStats[this]!!.attack?.damage ?: 0
 fun EntityType.populationProvide() = entityStats[this]!!.populationProvide
 fun EntityType.populationUse() = entityStats[this]!!.populationUse
+fun EntityType.productionEntity() = entityStats
+    .entries.firstOrNull { it.value.build?.options?.contains(this) ?: false }
+    ?.key
 

@@ -1,43 +1,49 @@
 package impl.production.units
 
-import impl.ActionProvider
-import impl.availableResources
-import impl.myBuildings
+import impl.*
+import impl.global.entityStats
+import impl.production.buildings.BuildingProductionManager
+import impl.util.algo.bfs.findClosestMineral
+import impl.util.algo.distance
 import impl.util.cellOccupied
 import impl.util.cellsAround
 import model.*
+import model.EntityType.*
 
 object UnitProductionManager : ActionProvider {
-    var currentOrder: EntityType? = null
-
     override fun provideActions(): Map<Int, EntityAction> {
-        if (currentOrder == null) {
-            currentOrder = UnitProductionGenerator.nextUnitToProduce.next()
-        }
+        var currentSpends = 0
 
-        return if (availableResources() >= currentOrder!!.cost()) {
-            val actions = produce(currentOrder!!)
-            currentOrder = null
-            actions
-        } else
-            //flush building orders
-            myBuildings().filter {
-                it.entityType == EntityType.RANGED_BASE
-                        || it.entityType == EntityType.MELEE_BASE || it.entityType == EntityType.BUILDER_BASE
-            }.map { it.id to EntityAction() }.toMap()
-    }
+        val buildActions = myBuildings()
+            .asSequence()
+            .filter { entityStats[it.entityType]!!.build != null }
+            .filter { availableResources() + currentSpends >= it.producingUnit()?.cost() ?: 0 }
+            .filter { UnitProductionDecisionMaker.shouldProduceUnit(it) }
+            .mapNotNull { b ->
+                val unitToProduce = b.producingUnit()!!
+                val target: Vec2Int = when (unitToProduce) {
+                    BUILDER_UNIT ->
+                        //use bfs to find closest minerals
+                        cellsAround(b).filter { !cellOccupied(it) }
+                            .mapNotNull { findClosestMineral(it) }.firstOrNull()?.position
+                        //if not successful find closest point of interest by distance
+                            ?: BuildingProductionManager.buildingRequests.map { it.coordinate }
+                                .plus(resources().map { it.position }).minByOrNull { b.distance(it) }
+                    RANGED_UNIT, MELEE_UNIT -> enemies().minByOrNull { b.distance(it) }?.position
+                    else -> null
+                } ?: Vec2Int(40, 40)
 
-    private fun produceUnit(builder: EntityType, unit: EntityType) =
-        myBuildings(builder)
-            .map { b -> b to cellsAround(b).firstOrNull { !cellOccupied(it.x, it.y) } }
-            .filter { it.second != null }
-            .map { (b, positionToBuildUnit) -> b.id to buildUnitAction(unit, positionToBuildUnit!!) }.toMap()
+                currentSpends += unitToProduce.cost()
+                cellsAround(b)
+                    .filter { !cellOccupied(it) }
+                    .minByOrNull { it.distance(target) }
+                    ?.let { b.id to buildUnitAction(unitToProduce, it) }
+            }.toMap()
+        val emptyActions = myBuildings()
+            .filter { !buildActions.containsKey(it.id) }
+            .map { it.id to EntityAction() }.toMap()
 
-    private fun produce(e: EntityType) = when (e) {
-        EntityType.MELEE_UNIT -> produceUnit(EntityType.MELEE_BASE, EntityType.MELEE_UNIT)
-        EntityType.RANGED_UNIT -> produceUnit(EntityType.RANGED_BASE, EntityType.RANGED_UNIT)
-        EntityType.BUILDER_UNIT -> produceUnit(EntityType.BUILDER_BASE, EntityType.BUILDER_UNIT)
-        else -> mapOf()
+        return buildActions + emptyActions
     }
 
     private fun buildUnitAction(unitType: EntityType, position2Build: Vec2Int): EntityAction =

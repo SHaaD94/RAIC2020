@@ -3,6 +3,7 @@ package impl.production.buildings
 import impl.*
 import impl.global.State.availableSupply
 import impl.global.State.totalSupply
+import impl.util.algo.CellIndex
 import impl.util.intersects
 import model.*
 import java.util.*
@@ -20,23 +21,17 @@ object BuildingProductionManager : ActionProvider {
                 requestBuilding(EntityType.BUILDER_BASE)
             myBuildings(EntityType.RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
                 requestBuilding(EntityType.RANGED_BASE)
-            myBuildings(EntityType.MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
-                requestBuilding(EntityType.MELEE_BASE)
             totalSupply >= 100 && myBuildings(EntityType.RANGED_BASE).count() < 2 &&
                     numbersOfBuildingsInQueue(EntityType.RANGED_BASE) == 0 -> {
                 requestBuilding(EntityType.RANGED_BASE)
             }
-            totalSupply >= 100 && myBuildings(EntityType.MELEE_BASE).count() < 2 &&
-                    numbersOfBuildingsInQueue(EntityType.MELEE_BASE) == 0 -> {
-                requestBuilding(EntityType.MELEE_BASE)
-            }
-            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 5 -> {
+            totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
                 requestBuilding(EntityType.HOUSE)
             }
-            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
+            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 4 -> {
                 requestBuilding(EntityType.HOUSE)
             }
-            totalSupply < 100 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) == 0 -> {
+            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 7 -> {
                 requestBuilding(EntityType.HOUSE)
             }
         }
@@ -49,10 +44,9 @@ object BuildingProductionManager : ActionProvider {
         buildingRequests.add(BuildingRequest(type, findPosition(type)))
     }
 
-    //TODO perfect place for index usage
     private fun monitorBuildingsRequests() {
         val finishedRequests = buildingRequests.filter { br ->
-            myBuildings(br.type).firstOrNull { it.position == br.coordinate && it.active } != null
+            CellIndex.getUnit(br.coordinate)?.entityType == br.type
         }
         buildingRequests.removeAll(finishedRequests)
 
@@ -71,7 +65,7 @@ object BuildingProductionManager : ActionProvider {
     }
 
     private fun numbersOfBuildingsInQueue(type: EntityType) =
-        buildingRequests.count { it.type == type }
+        buildingRequests.count { it.type == type } + myBuildings(type).count { !it.active }
 
     //TODO place for optimizations
     private fun findPosition(buildingType: EntityType): Vec2Int {

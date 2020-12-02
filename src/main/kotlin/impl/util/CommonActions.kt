@@ -4,23 +4,24 @@ import impl.global.State
 import impl.util.algo.distance
 import model.*
 
-fun attackAction(target: Entity, autoAttack: AutoAttack? = AutoAttack(State.maxPathfindNodes, arrayOf())) =
+fun Entity.attackAction(target: Entity, autoAttack: AutoAttack? = AutoAttack(State.maxPathfindNodes, arrayOf())) =
     EntityAction(
         attackAction = AttackAction(target.id, autoAttack)
     )
 
-fun moveAction(target: Vec2Int, findClosestPosition: Boolean = false, breakThrough: Boolean = false) = EntityAction(
-    moveAction = MoveAction(target, findClosestPosition, breakThrough)
-)
+fun Entity.moveAction(target: Vec2Int, findClosestPosition: Boolean = false, breakThrough: Boolean = false) =
+    EntityAction(
+        moveAction = MoveAction(target, findClosestPosition, breakThrough)
+    )
 
-fun Entity.attackingMove(
+fun Entity.moveAndAttack(
     target: Entity,
     findClosestPosition: Boolean = true,
-    breakThrough: Boolean = false,
-    autoAttack: AutoAttack = AutoAttack(State.maxPathfindNodes)
-): EntityAction {
-    return if (target.distance(this) < State.maxPathfindNodes)
-        moveAction(target.position, findClosestPosition, breakThrough)
-    else
-        attackAction(target, autoAttack)
+    breakThrough: Boolean = true,
+    autoAttack: AutoAttack? = AutoAttack(State.maxPathfindNodes, arrayOf())
+) = if (this.distance(target) > 5) {
+    moveAction(target.position, findClosestPosition, breakThrough)
+} else {
+    attackAction(target, autoAttack)
 }
+
