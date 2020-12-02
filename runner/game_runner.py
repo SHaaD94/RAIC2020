@@ -61,8 +61,8 @@ def run_games(folder, repeats):
                               current_version_path, '127.0.0.1', str(players[0]['Tcp']['port'])])
 
         for p in players[1:]:
-            port = p['Tcp']['port']
-            if p['Tcp'] is not None:
+            if p != 'QuickStart':
+                port = p['Tcp']['port']
                 _ = subprocess.Popen(['java',
                                       '-jar',
                                       f'{folder}/v.jar', '127.0.0.1', f'{port}'])
