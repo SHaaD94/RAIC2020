@@ -44,7 +44,6 @@ object BuildingProductionManager : ActionProvider {
         buildingRequests.add(BuildingRequest(type, findPosition(type)))
     }
 
-    //TODO perfect place for index usage
     private fun monitorBuildingsRequests() {
         val finishedRequests = buildingRequests.filter { br ->
             CellIndex.getUnit(br.coordinate)?.entityType == br.type
