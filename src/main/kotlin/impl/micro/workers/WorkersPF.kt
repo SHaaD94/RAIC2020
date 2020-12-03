@@ -26,12 +26,9 @@ object WorkersPF {
             .filter { it.damage() > 1 }
             .filter { it.entityType != EntityType.BUILDER_UNIT }
             .forEach { e ->
-                for (x in -enemyRangeThreshold until enemyRangeThreshold) {
-                    for (y in -enemyRangeThreshold until enemyRangeThreshold) {
-                        val c = Vec2Int(e.position.x + x, e.position.y + y)
-                        if (!c.isValid()) continue
-                        field[c.x][c.y] += (-e.damage() * (e.distance(c) / (e.attackRange() + 1))).roundToInt()
-                    }
+                e.cellsWithinDistance(enemyRangeThreshold).forEach { c ->
+                    if (e.attackRange() + 1 < e.distance(c)) return@forEach
+                    field[c.x][c.y] += (-e.damage() * (e.distance(c) / (e.attackRange()))).roundToInt()
                 }
             }
     }

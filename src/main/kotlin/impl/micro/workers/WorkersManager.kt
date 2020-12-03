@@ -16,7 +16,7 @@ object WorkersManager : ActionProvider {
 
         BuildingProductionManager.buildingRequests
             .asSequence()
-            .filter { availableResources() >= it.type.cost() }
+//            .filter { availableResources() >= it.type.cost() }
             .map { constructBuilding(it, freeWorkers()) }
             .forEach { resultActions.putAll(it) }
 
