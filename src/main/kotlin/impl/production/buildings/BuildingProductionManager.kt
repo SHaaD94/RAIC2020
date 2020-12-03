@@ -20,8 +20,8 @@ object BuildingProductionManager : ActionProvider {
         monitorBuildingsRequests()
         when {
             !wereInitialTurretsPlanned && myWorkers().count() == 20 -> {
-                requestBuilding(EntityType.TURRET, Vec2Int(5, 20))
-                requestBuilding(EntityType.TURRET, Vec2Int(20, 5))
+                requestBuilding(EntityType.TURRET, Vec2Int(4, 20))
+                requestBuilding(EntityType.TURRET, Vec2Int(20, 4))
                 wereInitialTurretsPlanned = true
             }
             myBuildings(EntityType.BUILDER_BASE).count() == 0 ->
@@ -87,8 +87,8 @@ object BuildingProductionManager : ActionProvider {
                     intersects(
                         x, x + supplySize,
                         yMax, yMax + supplySize,
-                        if (it.isBuilding() && x != 0) it.position - 1 else it.position,
-                        if (it.isBuilding() && x != 0) it.size() + 2 else it.size()
+                        if (it.isBuilding()) it.position - 1 else it.position,
+                        if (it.isBuilding()) it.size() + 2 else it.size()
                     )
                 }
                 if (noCollisions) {
@@ -101,8 +101,8 @@ object BuildingProductionManager : ActionProvider {
                     intersects(
                         xMax, xMax + supplySize,
                         y, y + supplySize,
-                        if (it.isBuilding() && y != 0) it.position - 1 else it.position,
-                        if (it.isBuilding() && y != 0) it.size() + 2 else it.size()
+                        if (it.isBuilding()) it.position - 1 else it.position,
+                        if (it.isBuilding()) it.size() + 2 else it.size()
                     )
                 }
                 if (noCollisions) {

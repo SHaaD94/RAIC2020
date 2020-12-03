@@ -11,7 +11,7 @@ object UnitProductionDecisionMaker {
     private const val defenseDistance = 60
 
     fun shouldProduceUnit(entity: Entity): Boolean {
-        return if (currentTick() < 150 && myWorkers().count() <= maxWorkers) {
+        return if (currentTick() < 200 && myWorkers().count() <= maxWorkers) {
             val allies = Vec2Int(0, 0).alliesWithinDistance(defenseDistance)
                 .filter { it.damage() > 1 }.map { it.health }.sum()
             val enemies = Vec2Int(0, 0).enemiesWithinDistance(defenseDistance)

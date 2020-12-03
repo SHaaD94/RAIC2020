@@ -16,6 +16,7 @@ object WorkersManager : ActionProvider {
 
         BuildingProductionManager.buildingRequests
             .asSequence()
+            .filter { availableResources() >= it.type.cost() }
             .map { constructBuilding(it, freeWorkers()) }
             .forEach { resultActions.putAll(it) }
 
@@ -61,16 +62,20 @@ object WorkersManager : ActionProvider {
                     resources().filter { WorkersPF.getScore(it.position) >= 0 }
                         .minByOrNull { w.distance(it) } ?: return@mapNotNull null
 
-                w.id to w.attackAction(
-                    closestResourceWithoutEnemies,
-                    AutoAttack(State.maxPathfindNodes, EntityType.values())
-                )
+                w.id to if (closestResourceWithoutEnemies.distance(w) > 15) {
+                    w.moveAction(closestResourceWithoutEnemies.position, true, true)
+                } else {
+                    w.attackAction(
+                        closestResourceWithoutEnemies,
+                        AutoAttack(State.maxPathfindNodes, EntityType.values())
+                    )
+                }
             }
         }.toMap()
 
     private fun runTo00(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers
-            .map { w -> w.id to w.moveAction(Vec2Int(0, 0), findClosestPosition = true, breakThrough = false) }
+            .map { w -> w.id to w.moveAction(Vec2Int(0, 0), findClosestPosition = true, breakThrough = true) }
             .toMap()
 
     private fun repairBuilding(worker: Entity, target: Entity): EntityAction {

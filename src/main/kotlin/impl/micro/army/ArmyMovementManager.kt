@@ -2,6 +2,7 @@ package impl.micro.army
 
 import impl.*
 import impl.util.algo.distance
+import impl.util.attackAction
 import impl.util.moveAction
 import impl.util.moveAndAttack
 import model.*
@@ -14,7 +15,7 @@ object ArmyMovementManager : ActionProvider {
 
         val mainBase = myBuildings(EntityType.BUILDER_BASE).firstOrNull()
         // don't rush into fight while we don't have income
-        if (currentTick() < 150 && mainBase != null) {
+        if (currentTick() < 200 && mainBase != null) {
             // gather at one point and defend against early aggression
             earlyGame(resultActions, mainBase)
         } else {
@@ -27,9 +28,9 @@ object ArmyMovementManager : ActionProvider {
                                     u.alliesWithinDistance(7).filter { it.damage() > 1 }.toList(),
                                     u.enemiesWithinDistance(10).filter { it.damage() > 1 }.toList()
                                 ) == Win
-                            ) u.moveAndAttack(closestEnemy)
-                            else u.moveAction(Vec2Int(0, 0), true)
-                        } else u.moveAndAttack(closestEnemy)
+                            ) u.moveAndAttack(closestEnemy, true, true)
+                            else u.moveAction(Vec2Int(0, 0), true, true)
+                        } else u.moveAndAttack(closestEnemy, true, true)
 
             }.forEach { resultActions[it.first] = it.second }
         }
@@ -40,8 +41,8 @@ object ArmyMovementManager : ActionProvider {
         myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
             val e = enemies().map { it to it.distance(mainBase) }.filter { it.second < 40 }
                 .minByOrNull { it.second }
-                ?.first ?: return@mapNotNull (u.id to u.moveAction(Vec2Int(15, 15), true))
-            u.id to u.moveAndAttack(e)
+                ?.first ?: return@mapNotNull (u.id to u.moveAction(Vec2Int(15, 15), true, true))
+            u.id to u.moveAndAttack(e, true, true)
         }.forEach { resultActions[it.first] = it.second }
     }
 
@@ -50,10 +51,10 @@ object ArmyMovementManager : ActionProvider {
             u to enemies()
                 .map { it to it.distance(u) }
                 .filter { (e, dist) -> dist <= u.attackRange() }
-                .minByOrNull { (e, dist) -> dist }
+                .minByOrNull { (e, _) -> e.health }
                 ?.first
         }
             .filter { it.second != null }
-            .forEach { (u, e) -> resultActions[u.id] = u.moveAndAttack(e!!, autoAttack = null) }
+            .forEach { (u, e) -> resultActions[u.id] = u.attackAction(e!!, autoAttack = null) }
     }
 }
