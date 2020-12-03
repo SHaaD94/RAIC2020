@@ -15,8 +15,10 @@ object UnitProductionManager : ActionProvider {
         var currentSpends = 0
 
         val buildActions = myBuildings()
+            .filter { it.entityType != TURRET }
             .asSequence()
             .filter { entityStats[it.entityType]!!.build != null }
+            .sortedBy { it.producingUnit()?.cost() ?: 0 }
             .filter { availableResources() + currentSpends >= it.producingUnit()?.cost() ?: 0 }
             .filter { UnitProductionDecisionMaker.shouldProduceUnit(it) }
             .mapNotNull { b ->

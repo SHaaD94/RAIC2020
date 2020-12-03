@@ -30,7 +30,7 @@ object WorkersPF {
                     for (y in -enemyRangeThreshold until enemyRangeThreshold) {
                         val c = Vec2Int(e.position.x + x, e.position.y + y)
                         if (!c.isValid()) continue
-                        field[c.x][c.y] += (-e.damage() * (e.distance(c) / enemyRangeThreshold)).roundToInt()
+                        field[c.x][c.y] += (-e.damage() * (e.distance(c) / (e.attackRange() + 1))).roundToInt()
                     }
                 }
             }

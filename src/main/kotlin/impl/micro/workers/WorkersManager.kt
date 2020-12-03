@@ -5,7 +5,6 @@ import impl.global.State
 import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
 import impl.util.*
-import impl.util.algo.bfs.findClosestMineral
 import impl.util.algo.distance
 import model.*
 
@@ -50,17 +49,12 @@ object WorkersManager : ActionProvider {
 
     private fun repairBuildings(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
-            freeWorkers.sortedBy { it.distance(b) }.take(b.maxHP() / 50).map { it.id to repairBuilding(it, b) }
+            freeWorkers.sortedBy { it.distance(b) }.take(b.maxHP() / 25).map { it.id to repairBuilding(it, b) }
         }.toMap()
 
     private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers.mapNotNull { w ->
             if (WorkersPF.getScore(w.position) < 0) {
-//                val bestCoord =
-//                    w.validCellsAround()
-//                        .filter { !cellOccupied(it) }
-//                        .map { it to WorkersPF.getScore(it) }
-//                        .maxByOrNull { it.second }?.first ?: Vec2Int(0, 0)
                 w.id to w.moveAction(Vec2Int(), true, true)
             } else {
                 val closestResourceWithoutEnemies =

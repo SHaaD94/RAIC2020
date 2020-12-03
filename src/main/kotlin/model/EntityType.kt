@@ -1,5 +1,6 @@
 package model
 
+import impl.global.State
 import impl.global.entityStats
 
 enum class EntityType(var tag: Int) {
@@ -17,7 +18,7 @@ enum class EntityType(var tag: Int) {
 
 fun EntityType.size() = entityStats[this]!!.size
 fun EntityType.maxHP() = entityStats[this]!!.maxHealth
-fun EntityType.cost() = entityStats[this]!!.cost
+fun EntityType.cost() = State.actualEntityCost[this] ?: entityStats[this]!!.cost
 fun EntityType.attackRange() = entityStats[this]!!.attack?.attackRange ?: 0
 fun EntityType.damage() = entityStats[this]!!.attack?.damage ?: 0
 fun EntityType.populationProvide() = entityStats[this]!!.populationProvide

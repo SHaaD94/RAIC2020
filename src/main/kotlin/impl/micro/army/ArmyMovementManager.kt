@@ -2,7 +2,6 @@ package impl.micro.army
 
 import impl.*
 import impl.util.algo.distance
-import impl.util.attackAction
 import impl.util.moveAction
 import impl.util.moveAndAttack
 import model.*

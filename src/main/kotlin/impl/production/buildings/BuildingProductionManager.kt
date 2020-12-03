@@ -12,26 +12,31 @@ data class BuildingRequest(val type: EntityType, var coordinate: Vec2Int)
 
 //TODO probably it is not ActionProvider anymore
 object BuildingProductionManager : ActionProvider {
+    var wereInitialTurretsPlanned = false
+
     val buildingRequests = LinkedList<BuildingRequest>()
 
     override fun provideActions(): Map<Int, EntityAction> {
         monitorBuildingsRequests()
         when {
+            !wereInitialTurretsPlanned && myWorkers().count() == 20 -> {
+                requestBuilding(EntityType.TURRET, Vec2Int(5, 20))
+                requestBuilding(EntityType.TURRET, Vec2Int(20, 5))
+                wereInitialTurretsPlanned = true
+            }
             myBuildings(EntityType.BUILDER_BASE).count() == 0 ->
                 requestBuilding(EntityType.BUILDER_BASE)
             myBuildings(EntityType.RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
                 requestBuilding(EntityType.RANGED_BASE)
-            totalSupply >= 100 && myBuildings(EntityType.RANGED_BASE).count() < 2 &&
-                    numbersOfBuildingsInQueue(EntityType.RANGED_BASE) == 0 -> {
-                requestBuilding(EntityType.RANGED_BASE)
-            }
+            myBuildings(EntityType.MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
+                requestBuilding(EntityType.MELEE_BASE)
             totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
                 requestBuilding(EntityType.HOUSE)
             }
-            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 4 -> {
+            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 3 -> {
                 requestBuilding(EntityType.HOUSE)
             }
-            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 7 -> {
+            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 5 -> {
                 requestBuilding(EntityType.HOUSE)
             }
         }
@@ -40,8 +45,8 @@ object BuildingProductionManager : ActionProvider {
 
     fun reservedResources() = buildingRequests.sumBy { it.type.cost() }
 
-    private fun requestBuilding(type: EntityType) {
-        buildingRequests.add(BuildingRequest(type, findPosition(type)))
+    private fun requestBuilding(type: EntityType, position: Vec2Int? = null) {
+        buildingRequests.add(BuildingRequest(type, position ?: findPosition(type)))
     }
 
     private fun monitorBuildingsRequests() {
@@ -50,18 +55,21 @@ object BuildingProductionManager : ActionProvider {
         }
         buildingRequests.removeAll(finishedRequests)
 
-        buildingRequests.filter { br ->
-            entities().any {
-                if (br.type == it.entityType && br.coordinate == it.position) false
-                else
-                    intersects(
-                        br.coordinate.x, br.coordinate.x + br.type.size(),
-                        br.coordinate.y, br.coordinate.y + br.type.size(),
-                        if (it.isBuilding()) it.position - 1 else it.position,
-                        if (it.isBuilding()) it.size() + 2 else it.size()
-                    )
-            }
-        }.forEach { it.coordinate = findPosition(it.type) }
+        //try to find new position for the collided ones, excluding turrets
+        buildingRequests
+            .filter { it.type != EntityType.TURRET }
+            .filter { br ->
+                entities().any {
+                    if (br.type == it.entityType && br.coordinate == it.position) false
+                    else
+                        intersects(
+                            br.coordinate.x, br.coordinate.x + br.type.size(),
+                            br.coordinate.y, br.coordinate.y + br.type.size(),
+                            if (it.isBuilding()) it.position - 1 else it.position,
+                            if (it.isBuilding()) it.size() + 2 else it.size()
+                        )
+                }
+            }.forEach { it.coordinate = findPosition(it.type) }
     }
 
     private fun numbersOfBuildingsInQueue(type: EntityType) =

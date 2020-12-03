@@ -1,5 +1,6 @@
 import impl.global.State
 import impl.global.initEntityStats
+import impl.micro.TurretsActionProvider
 import impl.micro.army.ArmyMovementManager
 import impl.micro.workers.WorkersManager
 import impl.micro.workers.WorkersPF
@@ -13,6 +14,7 @@ import model.PlayerView
 class MyStrategy {
 
     val actionProviders = listOf(
+        TurretsActionProvider,
         BuildingProductionManager,
         WorkersManager,
         UnitProductionManager,
