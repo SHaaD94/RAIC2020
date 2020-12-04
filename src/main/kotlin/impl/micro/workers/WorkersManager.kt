@@ -48,10 +48,15 @@ object WorkersManager : ActionProvider {
         return mapOf(worker.id to action)
     }
 
-    private fun repairBuildings(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
-        myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
-            freeWorkers.sortedBy { it.distance(b) }.take(b.maxHP() / 25).map { it.id to repairBuilding(it, b) }
+    private fun repairBuildings(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> {
+        val busyWorkers = mutableSetOf<Int>()
+
+        return myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
+            freeWorkers.filter { !busyWorkers.contains(it.id) }.sortedBy { it.distance(b) }.take(b.maxHP() / 25)
+                .onEach { busyWorkers.add(it.id) }
+                .map { it.id to repairBuilding(it, b) }
         }.toMap()
+    }
 
     private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers.mapNotNull { w ->
