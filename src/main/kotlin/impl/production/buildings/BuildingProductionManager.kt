@@ -4,8 +4,10 @@ import impl.*
 import impl.global.State.availableSupply
 import impl.global.State.totalSupply
 import impl.util.algo.CellIndex
+import impl.util.algo.distance
 import impl.util.intersects
 import model.*
+import model.EntityType.*
 import java.util.*
 
 data class BuildingRequest(val type: EntityType, var coordinate: Vec2Int)
@@ -20,24 +22,38 @@ object BuildingProductionManager : ActionProvider {
         monitorBuildingsRequests()
         when {
             !wereInitialTurretsPlanned && myWorkers().count() == 20 -> {
-                requestBuilding(EntityType.TURRET, Vec2Int(4, 20))
-                requestBuilding(EntityType.TURRET, Vec2Int(20, 4))
+                requestBuilding(TURRET, Vec2Int(4, 20))
+                requestBuilding(TURRET, Vec2Int(20, 4))
                 wereInitialTurretsPlanned = true
             }
-            myBuildings(EntityType.BUILDER_BASE).count() == 0 ->
-                requestBuilding(EntityType.BUILDER_BASE)
-            myBuildings(EntityType.RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
-                requestBuilding(EntityType.RANGED_BASE)
-            myBuildings(EntityType.MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
-                requestBuilding(EntityType.MELEE_BASE)
-            totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
-                requestBuilding(EntityType.HOUSE)
+            totalSupply > 80 && currentTick() % 50 == 0 -> {
+                myWorkers()
+//                    .sortedByDescending { it.distance(Vec2Int(0, 0)) }
+                    .shuffled()
+                    .firstOrNull {
+                        val possibleTurretPosition = it.position - TURRET.size()
+                        possibleTurretPosition
+                            .cellsCovered(TURRET.size())
+                            .filter { CellIndex.getUnit(it) == null }.count() == TURRET.size() * 2
+                    }?.let {
+                        requestBuilding(TURRET, it.position - TURRET.size())
+                    }
             }
-            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 3 -> {
-                requestBuilding(EntityType.HOUSE)
+
+            myBuildings(BUILDER_BASE).count() == 0 ->
+                requestBuilding(BUILDER_BASE)
+            myBuildings(RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
+                requestBuilding(RANGED_BASE)
+            myBuildings(MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
+                requestBuilding(MELEE_BASE)
+            totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(HOUSE) < 2 -> {
+                requestBuilding(HOUSE)
             }
-            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 5 -> {
-                requestBuilding(EntityType.HOUSE)
+            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(HOUSE) <= 3 -> {
+                requestBuilding(HOUSE)
+            }
+            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(HOUSE) <= 5 -> {
+                requestBuilding(HOUSE)
             }
         }
         return mapOf()
@@ -57,7 +73,7 @@ object BuildingProductionManager : ActionProvider {
 
         //try to find new position for the collided ones, excluding turrets
         buildingRequests
-            .filter { it.type != EntityType.TURRET }
+            .filter { it.type != TURRET }
             .filter { br ->
                 entities().any {
                     if (br.type == it.entityType && br.coordinate == it.position) false
