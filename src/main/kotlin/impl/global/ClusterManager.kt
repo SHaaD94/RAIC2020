@@ -6,8 +6,9 @@ import impl.util.algo.dbscan.DistanceMetric
 import impl.util.algo.distance
 import model.Entity
 import model.PlayerView
+import model.Vec2Int
 
-data class Cluster(val unitIds: Set<Int>, val units: List<Entity>, val playerId: Int)
+data class Cluster(val unitIds: Set<Int>, val units: List<Entity>, val centroid: Vec2Int, val playerId: Int)
 
 object ClusterManager {
     var clusters: List<Cluster> = listOf()
@@ -24,7 +25,12 @@ object ClusterManager {
         )
             .performClustering()
             .map { unitArray ->
-                Cluster(unitArray.map { it.id }.toSet(), unitArray.toList(), unitArray.first().playerId!!)
+                Cluster(
+                    unitArray.map { it.id }.toSet(),
+                    unitArray.toList(),
+                    unitArray.fold(Vec2Int(0, 0)) { l, r -> l + r.position } / unitArray.size,
+                    unitArray.first().playerId!!
+                )
             }
 
     }

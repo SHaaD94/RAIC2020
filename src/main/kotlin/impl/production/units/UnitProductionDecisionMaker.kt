@@ -7,7 +7,7 @@ import model.Vec2Int
 import kotlin.math.min
 
 object UnitProductionDecisionMaker {
-    private const val maxWorkers = 70
+    private const val maxWorkers = 40
     private const val defenseDistance = 60
 
     fun shouldProduceUnit(entity: Entity): Boolean {

@@ -27,7 +27,7 @@ object WorkersPF {
             .filter { it.entityType != EntityType.BUILDER_UNIT }
             .forEach { e ->
                 e.cellsWithinDistance(enemyRangeThreshold).forEach { c ->
-                    if (e.attackRange() + 1 < e.distance(c)) return@forEach
+//                    if (e.attackRange() + 2 < e.distance(c)) return@forEach
                     field[c.x][c.y] += (-e.damage() * (e.distance(c) / (e.attackRange()))).roundToInt()
                 }
             }
