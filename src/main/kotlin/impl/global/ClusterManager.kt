@@ -15,7 +15,7 @@ object ClusterManager {
     fun update(playerView: PlayerView) {
 
         this.clusters = DBSCANClusterer(
-            entities().filter { it.damage() > 0 }.toList(), 5, 5.0,
+            entities().filter { it.damage() > 1 }.toList(), 5, 5.0,
             object : DistanceMetric<Entity> {
                 override fun calculateDistance(val1: Entity, val2: Entity): Int {
                     if (val1.playerId != val2.playerId) return 1_000_000

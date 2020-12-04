@@ -3,6 +3,7 @@ package debug
 import DebugInterface
 import impl.global.ClusterManager
 import impl.micro.workers.WorkersPF
+import impl.util.algo.distance
 import model.*
 import kotlin.random.Random
 
@@ -61,19 +62,22 @@ fun DebugInterface.drawLine(v1: Vec2Int, v2: Vec2Int, c: Color) {
 }
 
 
-private val randomColors = (0..100).map {
+private val randomColors = (0..1000).map {
     Color(
-        Random.nextInt(255).toFloat(),
-        Random.nextInt(255).toFloat(),
-        Random.nextInt(255).toFloat(),
-        0.5F
+        Random.nextFloat(),
+        Random.nextFloat(),
+        Random.nextFloat(),
+        0.8F
     )
 }
 
 fun DebugInterface.drawClusters() {
-    ClusterManager.clusters.forEachIndexed { i, cluster ->
+    ClusterManager.clusters.sortedBy { Vec2Int(0,0).distance(it.centroid) }.forEachIndexed { i, cluster ->
         cluster.units.forEach {
-            this.drawSquare(it.position.x, it.position.y, it.size(), randomColors[i])
+            this.drawSquare(
+                it.position.x, it.position.y, it.size(),
+                randomColors[i]
+            )
         }
     }
 }

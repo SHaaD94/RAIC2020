@@ -1,5 +1,5 @@
+import debug.drawClusters
 import debug.globalDebugInterface
-import impl.currentTick
 import impl.global.ClusterManager
 import impl.global.State
 import impl.global.initEntityStats
@@ -10,8 +10,9 @@ import impl.micro.workers.WorkersPF
 import impl.production.buildings.BuildingProductionManager
 import impl.production.units.UnitProductionManager
 import impl.util.algo.CellIndex
-import model.*
-import kotlin.random.Random
+import model.Action
+import model.EntityAction
+import model.PlayerView
 
 class MyStrategy {
 
@@ -34,6 +35,8 @@ class MyStrategy {
         val resActions = mutableMapOf<Int, EntityAction>()
 
         actionProviders.forEach { resActions.putAll(it.provideActions()) }
+
+        debugInterface?.drawClusters()
 
         return Action(resActions)
     }

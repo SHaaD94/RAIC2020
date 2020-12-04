@@ -1,5 +1,6 @@
 package impl.util.algo.pathFinding
 
+import impl.micro.workers.WorkersPF
 import impl.util.algo.CellIndex
 import impl.util.algo.distance
 import model.Entity
@@ -16,10 +17,19 @@ private fun BitSet.add(v: Vec2Int) = visited.set(v.x * 80 + v.y)
 
 
 //----- BFS
-fun findClosestResource(startingPoint: Vec2Int, maxCells: Int = 10): Entity? =
-    findClosestEntity(startingPoint, EntityType.RESOURCE)
+fun findClosestResource(
+    startingPoint: Vec2Int,
+    maxCells: Int = 10,
+    positionFilter: (Vec2Int) -> Boolean = { true }
+): Entity? =
+    findClosestEntity(startingPoint, EntityType.RESOURCE, entityFilter = { v -> WorkersPF.getScore(v) > 0 })
 
-fun findClosestEntity(startingPoint: Vec2Int, type: EntityType, maxCells: Int = 10): Entity? {
+fun findClosestEntity(
+    startingPoint: Vec2Int,
+    type: EntityType,
+    maxCells: Int = 10,
+    entityFilter: (Vec2Int) -> Boolean = { true }
+): Entity? {
     visited.clear()
 
     val toVisit = LinkedList<Vec2Int>()
@@ -37,6 +47,7 @@ fun findClosestEntity(startingPoint: Vec2Int, type: EntityType, maxCells: Int = 
 
         cur.validCellsAround()
             .filter { !visited.contains(it) }
+            .filter { entityFilter(it) }
             .filter { CellIndex.getUnit(it) == null || CellIndex.getUnit(it)?.entityType == type }
             .forEach { c ->
                 toVisit.add(c)

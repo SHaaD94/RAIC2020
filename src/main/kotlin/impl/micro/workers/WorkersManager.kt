@@ -6,6 +6,7 @@ import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
 import impl.util.*
 import impl.util.algo.distance
+import impl.util.algo.pathFinding.findClosestResource
 import model.*
 
 object WorkersManager : ActionProvider {
@@ -63,6 +64,13 @@ object WorkersManager : ActionProvider {
             if (WorkersPF.getScore(w.position) < 0) {
                 w.id to w.moveAction(Vec2Int(), true, true)
             } else {
+                //TODO THIS MIGHT BE REDUCED LATER
+                val closestResourceForSure = findClosestResource(w.position, 25)
+
+                if (closestResourceForSure != null) {
+                    return@mapNotNull w.id to w.moveAction(closestResourceForSure.position, true, true)
+                }
+
                 val closestResourceWithoutEnemies =
                     resources().filter { WorkersPF.getScore(it.position) >= 0 }
                         .minByOrNull { w.distance(it) } ?: return@mapNotNull null
