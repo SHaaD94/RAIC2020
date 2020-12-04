@@ -26,7 +26,7 @@ object ArmyMovementManager : ActionProvider {
                         if (u.enemiesWithinDistance(10).any()) {
                             if (FightSimulation.predictResult(
                                     u.alliesWithinDistance(7).filter { it.damage() > 1 }.toList(),
-                                    u.enemiesWithinDistance(10).filter { it.damage() > 1 }.toList()
+                                    closestEnemy.enemiesWithinDistance(7).filter { it.damage() > 1 }.toList()
                                 ) == Win
                             ) u.moveAndAttack(closestEnemy, true, true)
                             else u.moveAction(Vec2Int(0, 0), true, true)
