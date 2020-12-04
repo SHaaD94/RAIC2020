@@ -51,6 +51,7 @@ object ArmyMovementManager : ActionProvider {
             u to enemies()
                 .map { it to it.distance(u) }
                 .filter { (e, dist) -> dist <= u.attackRange() }
+                .filter { it.first.health > 0 }
                 .minByOrNull { (e, _) -> e.health }
                 ?.first
         }

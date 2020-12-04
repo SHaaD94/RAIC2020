@@ -64,16 +64,18 @@ object WorkersManager : ActionProvider {
             if (WorkersPF.getScore(w.position) < 0) {
                 w.id to w.moveAction(Vec2Int(), true, true)
             } else {
-                //TODO THIS MIGHT BE REDUCED LATER
-                val closestResourceForSure = findClosestResource(w.position, 25)
-
-                if (closestResourceForSure != null) {
-                    return@mapNotNull w.id to w.moveAction(closestResourceForSure.position, true, true)
-                }
-
                 val closestResourceWithoutEnemies =
                     resources().filter { WorkersPF.getScore(it.position) >= 0 }
                         .minByOrNull { w.distance(it) } ?: return@mapNotNull null
+
+                if (closestResourceWithoutEnemies.distance(w) < 20) {
+                    //TODO THIS MIGHT BE REDUCED LATER
+                    val bestNearestResource = findClosestResource(w.position, 25)
+
+                    if (bestNearestResource != null) {
+                        return@mapNotNull w.id to w.moveAction(bestNearestResource.position, true, true)
+                    }
+                }
 
                 w.id to if (closestResourceWithoutEnemies.distance(w) > 15) {
                     w.moveAction(closestResourceWithoutEnemies.position, true, true)
