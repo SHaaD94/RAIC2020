@@ -4,35 +4,56 @@ import impl.*
 import impl.global.State.availableSupply
 import impl.global.State.totalSupply
 import impl.util.algo.CellIndex
+import impl.util.algo.distance
 import impl.util.intersects
 import model.*
+import model.EntityType.*
 import java.util.*
 
 data class BuildingRequest(val type: EntityType, var coordinate: Vec2Int)
 
 //TODO probably it is not ActionProvider anymore
 object BuildingProductionManager : ActionProvider {
+    var wereInitialTurretsPlanned = false
+
     val buildingRequests = LinkedList<BuildingRequest>()
 
     override fun provideActions(): Map<Int, EntityAction> {
         monitorBuildingsRequests()
         when {
-            myBuildings(EntityType.BUILDER_BASE).count() == 0 ->
-                requestBuilding(EntityType.BUILDER_BASE)
-            myBuildings(EntityType.RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
-                requestBuilding(EntityType.RANGED_BASE)
-            totalSupply >= 100 && myBuildings(EntityType.RANGED_BASE).count() < 2 &&
-                    numbersOfBuildingsInQueue(EntityType.RANGED_BASE) == 0 -> {
-                requestBuilding(EntityType.RANGED_BASE)
+            !wereInitialTurretsPlanned && myWorkers().count() == 20 -> {
+                requestBuilding(TURRET, Vec2Int(4, 20))
+                requestBuilding(TURRET, Vec2Int(20, 4))
+                wereInitialTurretsPlanned = true
             }
-            totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(EntityType.HOUSE) < 2 -> {
-                requestBuilding(EntityType.HOUSE)
+            totalSupply > 80 && currentTick() % 50 == 0 -> {
+                myWorkers()
+//                    .sortedByDescending { it.distance(Vec2Int(0, 0)) }
+                    .shuffled()
+                    .firstOrNull {
+                        val possibleTurretPosition = it.position - TURRET.size()
+                        possibleTurretPosition
+                            .cellsCovered(TURRET.size())
+                            .filter { CellIndex.getUnit(it) == null }.count() == TURRET.size() * 2
+                    }?.let {
+                        requestBuilding(TURRET, it.position - TURRET.size())
+                    }
             }
-            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 4 -> {
-                requestBuilding(EntityType.HOUSE)
+
+            myBuildings(BUILDER_BASE).count() == 0 ->
+                requestBuilding(BUILDER_BASE)
+            myBuildings(RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
+                requestBuilding(RANGED_BASE)
+            myBuildings(MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
+                requestBuilding(MELEE_BASE)
+            totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(HOUSE) < 2 -> {
+                requestBuilding(HOUSE)
             }
-            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(EntityType.HOUSE) <= 7 -> {
-                requestBuilding(EntityType.HOUSE)
+            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(HOUSE) <= 3 -> {
+                requestBuilding(HOUSE)
+            }
+            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(HOUSE) <= 5 -> {
+                requestBuilding(HOUSE)
             }
         }
         return mapOf()
@@ -40,8 +61,8 @@ object BuildingProductionManager : ActionProvider {
 
     fun reservedResources() = buildingRequests.sumBy { it.type.cost() }
 
-    private fun requestBuilding(type: EntityType) {
-        buildingRequests.add(BuildingRequest(type, findPosition(type)))
+    private fun requestBuilding(type: EntityType, position: Vec2Int? = null) {
+        buildingRequests.add(BuildingRequest(type, position ?: findPosition(type)))
     }
 
     private fun monitorBuildingsRequests() {
@@ -50,18 +71,21 @@ object BuildingProductionManager : ActionProvider {
         }
         buildingRequests.removeAll(finishedRequests)
 
-        buildingRequests.filter { br ->
-            entities().any {
-                if (br.type == it.entityType && br.coordinate == it.position) false
-                else
-                    intersects(
-                        br.coordinate.x, br.coordinate.x + br.type.size(),
-                        br.coordinate.y, br.coordinate.y + br.type.size(),
-                        if (it.isBuilding()) it.position - 1 else it.position,
-                        if (it.isBuilding()) it.size() + 2 else it.size()
-                    )
-            }
-        }.forEach { it.coordinate = findPosition(it.type) }
+        //try to find new position for the collided ones, excluding turrets
+        buildingRequests
+            .filter { it.type != TURRET }
+            .filter { br ->
+                entities().any {
+                    if (br.type == it.entityType && br.coordinate == it.position) false
+                    else
+                        intersects(
+                            br.coordinate.x, br.coordinate.x + br.type.size(),
+                            br.coordinate.y, br.coordinate.y + br.type.size(),
+                            if (it.isBuilding()) it.position - 1 else it.position,
+                            if (it.isBuilding()) it.size() + 2 else it.size()
+                        )
+                }
+            }.forEach { it.coordinate = findPosition(it.type) }
     }
 
     private fun numbersOfBuildingsInQueue(type: EntityType) =
@@ -79,8 +103,8 @@ object BuildingProductionManager : ActionProvider {
                     intersects(
                         x, x + supplySize,
                         yMax, yMax + supplySize,
-                        if (it.isBuilding() && x != 0) it.position - 1 else it.position,
-                        if (it.isBuilding() && x != 0) it.size() + 2 else it.size()
+                        if (it.isBuilding()) it.position - 1 else it.position,
+                        if (it.isBuilding()) it.size() + 2 else it.size()
                     )
                 }
                 if (noCollisions) {
@@ -93,8 +117,8 @@ object BuildingProductionManager : ActionProvider {
                     intersects(
                         xMax, xMax + supplySize,
                         y, y + supplySize,
-                        if (it.isBuilding() && y != 0) it.position - 1 else it.position,
-                        if (it.isBuilding() && y != 0) it.size() + 2 else it.size()
+                        if (it.isBuilding()) it.position - 1 else it.position,
+                        if (it.isBuilding()) it.size() + 2 else it.size()
                     )
                 }
                 if (noCollisions) {

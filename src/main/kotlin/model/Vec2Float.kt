@@ -8,6 +8,8 @@ data class Vec2Float(val x: Float = 0.0F, val y: Float = 0.0F) : Comparable<Vec2
             Vec2Float(StreamUtil.readFloat(stream), StreamUtil.readFloat(stream))
     }
 
+    constructor(xx: Int, yy: Int) : this(xx.toFloat(), yy.toFloat())
+
     fun writeTo(stream: java.io.OutputStream) {
         StreamUtil.writeFloat(stream, x)
         StreamUtil.writeFloat(stream, y)

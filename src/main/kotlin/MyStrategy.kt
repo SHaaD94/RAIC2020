@@ -1,5 +1,9 @@
+import debug.drawClusters
+import debug.globalDebugInterface
+import impl.global.ClusterManager
 import impl.global.State
 import impl.global.initEntityStats
+import impl.micro.TurretsActionProvider
 import impl.micro.army.ArmyMovementManager
 import impl.micro.workers.WorkersManager
 import impl.micro.workers.WorkersPF
@@ -13,6 +17,7 @@ import model.PlayerView
 class MyStrategy {
 
     val actionProviders = listOf(
+        TurretsActionProvider,
         BuildingProductionManager,
         WorkersManager,
         UnitProductionManager,
@@ -20,20 +25,25 @@ class MyStrategy {
     )
 
     fun getAction(playerView: PlayerView, debugInterface: DebugInterface?): Action {
+        globalDebugInterface = debugInterface
         initEntityStats(playerView)
         State.update(playerView)
         CellIndex.update(playerView)
         WorkersPF.update(playerView)
+        ClusterManager.update(playerView)
 
         val resActions = mutableMapOf<Int, EntityAction>()
 
         actionProviders.forEach { resActions.putAll(it.provideActions()) }
 
+        debugInterface?.drawClusters()
+
         return Action(resActions)
     }
 
     fun debugUpdate(playerView: PlayerView, debugInterface: DebugInterface) {
-//        debugInterface.send(model.DebugCommand.Clear())
-//        debugInterface.getState()
+//        if (currentTick() > 5) drawClusters()
+//        drawWorkersPf(debugInterface)
     }
+
 }

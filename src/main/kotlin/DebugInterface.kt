@@ -1,6 +1,8 @@
+import model.*
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
+
 
 class DebugInterface(private val inputStream: InputStream, private val outputStream: OutputStream) {
     fun send(command: model.DebugCommand) {
@@ -11,6 +13,7 @@ class DebugInterface(private val inputStream: InputStream, private val outputStr
             throw RuntimeException(e)
         }
     }
+
     fun getState(): model.DebugState {
         try {
             model.ClientMessage.RequestDebugState().writeTo(outputStream)
