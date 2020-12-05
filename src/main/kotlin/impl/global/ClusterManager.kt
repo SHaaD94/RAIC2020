@@ -1,6 +1,5 @@
 package impl.global
 
-import impl.entities
 import impl.util.algo.dbscan.DBSCANClusterer
 import impl.util.algo.dbscan.DistanceMetric
 import impl.util.algo.distance
@@ -10,12 +9,21 @@ import model.Vec2Int
 
 data class Cluster(val unitIds: Set<Int>, val units: List<Entity>, val centroid: Vec2Int, val playerId: Int)
 
+data class MovePosition(val v: Vec2Int)
+
 object ClusterManager {
     var clusters: List<Cluster> = listOf()
-    fun update(playerView: PlayerView) {
+//
+//    var cluster2Position = mapOf<Cluster, Vec2Int>()
+//
+//    fun getMoveForUnit(entity: Entity): MovePosition {
+//
+//    }
 
+
+    fun update(playerView: PlayerView) {
         this.clusters = DBSCANClusterer(
-            entities().filter { it.damage() > 1 }.toList(), 5, 5.0,
+            playerView.entities.filter { it.damage() > 1 }.toList(), 5, 5.0,
             object : DistanceMetric<Entity> {
                 override fun calculateDistance(val1: Entity, val2: Entity): Int {
                     if (val1.playerId != val2.playerId) return 1_000_000
