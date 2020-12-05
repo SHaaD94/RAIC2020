@@ -34,7 +34,15 @@ class MyStrategy {
 
         val resActions = mutableMapOf<Int, EntityAction>()
 
-        actionProviders.forEach { resActions.putAll(it.provideActions()) }
+        actionProviders.forEach {
+            it.provideActions().forEach { (u, action) ->
+                if (resActions.containsKey(u)) {
+                    println("FUCK! DUPLICATED MOVES FOR ONE UNIT")
+                } else {
+                    resActions[u] = action
+                }
+            }
+        }
 
         debugInterface?.drawClusters()
 

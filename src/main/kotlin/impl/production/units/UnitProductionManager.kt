@@ -15,8 +15,12 @@ object UnitProductionManager : ActionProvider {
     override fun provideActions(): Map<Int, EntityAction> {
         var currentSpends = 0
 
-        val buildActions = myBuildings()
-            .filter { it.entityType != TURRET }
+        fun buildingsWhichCanProduce() =
+            myBuildings().filter {
+                it.entityType == BUILDER_BASE || it.entityType == MELEE_BASE || it.entityType == RANGED_BASE
+            }
+
+        val buildActions = buildingsWhichCanProduce()
             .asSequence()
             .filter { entityStats[it.entityType]!!.build != null }
             .sortedBy { it.producingUnit()?.cost() ?: 0 }
@@ -42,7 +46,7 @@ object UnitProductionManager : ActionProvider {
                     .minByOrNull { it.distance(target) }
                     ?.let { b.id to buildUnitAction(unitToProduce, it) }
             }.toMap()
-        val emptyActions = myBuildings()
+        val emptyActions = buildingsWhichCanProduce()
             .filter { !buildActions.containsKey(it.id) }
             .map { it.id to EntityAction() }.toMap()
 
