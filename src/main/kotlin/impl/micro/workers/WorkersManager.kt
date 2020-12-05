@@ -8,6 +8,7 @@ import impl.util.*
 import impl.util.algo.distance
 import impl.util.algo.pathFinding.findClosestResource
 import model.*
+import kotlin.math.min
 
 object WorkersManager : ActionProvider {
     override fun provideActions(): Map<Int, EntityAction> {
@@ -53,7 +54,10 @@ object WorkersManager : ActionProvider {
         val busyWorkers = mutableSetOf<Int>()
 
         return myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
-            freeWorkers.filter { !busyWorkers.contains(it.id) }.sortedBy { it.distance(b) }.take(b.maxHP() / 25)
+            freeWorkers.filter { !busyWorkers.contains(it.id) }
+                .filter { it.distance(b) < 20 }
+                .sortedBy { it.distance(b) }
+                .take(min(b.maxHP() / 25, 4))
                 .onEach { busyWorkers.add(it.id) }
                 .map { it.id to repairBuilding(it, b) }
         }.toMap()
