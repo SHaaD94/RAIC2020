@@ -4,6 +4,7 @@ import impl.*
 import impl.global.State.availableSupply
 import impl.global.State.totalSupply
 import impl.util.algo.CellIndex
+import impl.util.cellsAround
 import impl.util.intersects
 import model.*
 import model.EntityType.*
@@ -80,16 +81,8 @@ object BuildingProductionManager : ActionProvider {
         buildingRequests
             .filter { it.type != TURRET }
             .filter { br ->
-                entities().any {
-                    if (br.type == it.entityType && br.coordinate == it.position) false
-                    else
-                        intersects(
-                            br.coordinate.x, br.coordinate.x + br.type.size(),
-                            br.coordinate.y, br.coordinate.y + br.type.size(),
-                            if (it.isBuilding()) it.position - 1 else it.position,
-                            if (it.isBuilding()) it.size() + 2 else it.size()
-                        )
-                }
+                if (CellIndex.getUnit(br.coordinate)?.entityType == br.type) false else
+                    !safeToPlace(br.coordinate.x, br.coordinate.y, br.type.size())
             }.forEach {
                 it.coordinate = when (it.type) {
                     HOUSE -> findSupplyPosition()
@@ -117,28 +110,14 @@ object BuildingProductionManager : ActionProvider {
         var yMax = 0
         outer@ while (true) {
             for (x in (0..xMax)) {
-                val noCollisions = entities().none {
-                    intersects(
-                        x, x + supplySize,
-                        yMax, yMax + supplySize,
-                        if (it.isBuilding()) it.position - 1 else it.position,
-                        if (it.isBuilding()) it.size() + 2 else it.size()
-                    )
-                }
+                val noCollisions = safeToPlace(x, yMax, supplySize)
                 if (noCollisions) {
                     supplyPos = Vec2Int(x, yMax)
                     break@outer
                 }
             }
             for (y in (0..yMax)) {
-                val noCollisions = entities().none {
-                    intersects(
-                        xMax, xMax + supplySize,
-                        y, y + supplySize,
-                        if (it.isBuilding()) it.position - 1 else it.position,
-                        if (it.isBuilding()) it.size() + 2 else it.size()
-                    )
-                }
+                val noCollisions = safeToPlace(xMax, y, supplySize)
                 if (noCollisions) {
                     supplyPos = Vec2Int(xMax, y)
                     break@outer
@@ -148,6 +127,25 @@ object BuildingProductionManager : ActionProvider {
             yMax += 1
         }
         return supplyPos
+    }
+
+    private fun safeToPlace(x: Int, y: Int, size: Int): Boolean {
+        val noCollisions = entities().none {
+            intersects(
+                x, x + size,
+                y, y + size,
+                if (it.isBuilding()) it.position - 1 else it.position,
+                if (it.isBuilding()) it.size() + 2 else it.size()
+            )
+        }
+
+        val noEnemiesAround = sequenceOf(
+            Vec2Int(x, y),
+            Vec2Int(x + size, y),
+            Vec2Int(x, y + size),
+            Vec2Int(x + size, y + size)
+        ).flatMap { it.enemiesWithinDistance(5) }.none()
+        return noCollisions && noEnemiesAround
     }
 
 }

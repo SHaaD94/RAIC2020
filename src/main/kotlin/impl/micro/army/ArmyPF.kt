@@ -84,10 +84,10 @@ object ArmyPF {
         }
 
         // -- 5. simulation score
-        val eToDistance = enemies().map { it to it.distance(v) }
-        if (eToDistance.any { it.second < 10.0 }) {
-            val myUnit = myArmy().minByOrNull { it.distance(v) }
-            val enemyUnit = eToDistance.minByOrNull { it.second }?.first
+        val eToDistance = v.enemiesWithinDistance(7).filter { it.damage() > 1 }
+        if (eToDistance.any()) {
+            val myUnit = v.alliesWithinDistance(7).filter { it.damage() > 1 }.minByOrNull { it.distance(v) }
+            val enemyUnit = eToDistance.minByOrNull { it.distance(v) }
             if (FightSimulation.predictResultFast(
                     myUnit?.alliesWithinDistance(7)?.filter { it.damage() > 1 }?.toList() ?: emptyList(),
                     enemyUnit?.enemiesWithinDistance(7)?.filter { it.damage() > 1 }?.toList() ?: emptyList()

@@ -19,8 +19,20 @@ object ArmyMovementManager : ActionProvider {
             earlyGame(resultActions, mainBase)
         } else {
             myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
+                val cellsToCheck =
+                    sequenceOf(
+                        u.position,
+                        u.position.copy(x = u.position.x - 5),
+                        u.position.copy(x = u.position.x - 5, y = u.position.y + 5),
+                        u.position.copy(x = u.position.x + 5),
+                        u.position.copy(y = u.position.y + 5),
+                        u.position.copy(y = u.position.y - 5),
+                        u.position.copy(x = u.position.x + 5, y = u.position.y - 5),
+                        u.position + 5,
+                        u.position - 5
+                    ).filter { it.isValid() }
 
-                val cell = u.cellsWithinDistance(5)
+                val cell = cellsToCheck
                     .map { it to ArmyPF.getMeleeScore(it).score }
                     .maxByOrNull { it.second }
                     ?.first ?: Vec2Int()
