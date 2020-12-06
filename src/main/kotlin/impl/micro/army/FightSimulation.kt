@@ -1,5 +1,6 @@
 package impl.micro.army
 
+import impl.myPlayerId
 import model.Entity
 import model.EntityType
 
@@ -8,7 +9,14 @@ object FightSimulation {
 
         fun scoreFunction(units: List<Entity>) =
             units
-                .map { it.damage() * it.attackRange() * it.health * if (it.entityType == EntityType.TURRET) 0.4 else 1.0 }
+                .map {
+                    it.damage() * it.attackRange() * it.health *
+                            when (it.entityType) {
+                                EntityType.TURRET -> 0.4
+                                EntityType.MELEE_UNIT -> if (it.playerId == myPlayerId()) 0.75 else 1.25
+                                else -> 1.0
+                            }
+                }
                 .sum()
 
         return if (scoreFunction(myUnits) > scoreFunction(enemies)) Win else Loose
