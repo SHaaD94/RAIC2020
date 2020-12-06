@@ -63,7 +63,7 @@ object WorkersManager : ActionProvider {
             freeWorkers.filter { !busyWorkers.contains(it.id) }
                 .filter { it.distance(b) < 20 }
                 .sortedBy { it.distance(b) }
-                .take(min(b.maxHP() / 25, 4))
+                .take(min(b.maxHP() / 25, 3))
                 .onEach { busyWorkers.add(it.id) }
                 .map { it.id to repairBuilding(it, b) }
         }.toMap()

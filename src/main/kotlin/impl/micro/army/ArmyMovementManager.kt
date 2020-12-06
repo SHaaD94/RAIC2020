@@ -19,7 +19,7 @@ object ArmyMovementManager : ActionProvider {
             earlyGame(resultActions, mainBase)
         } else {
             myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-                val cellsToCheck =
+                val cellsToCheck = if (u.enemiesWithinDistance(10).any()) {
                     sequenceOf(
                         u.position,
                         u.position.copy(x = u.position.x - 5),
@@ -31,7 +31,9 @@ object ArmyMovementManager : ActionProvider {
                         u.position + 5,
                         u.position - 5
                     ).filter { it.isValid() }
-
+                } else {
+                    u.cellsWithinDistance(5)
+                }
                 val cell = cellsToCheck
                     .map { it to ArmyPF.getMeleeScore(it).score }
                     .maxByOrNull { it.second }
@@ -54,7 +56,7 @@ object ArmyMovementManager : ActionProvider {
     }
 
     private fun autoAttack(resultActions: MutableMap<Int, EntityAction>) {
-        myArmy().map { u ->
+        myArmy().filter { !ArmyPF.getMeleeScore(it.position).loosingFight }.map { u ->
             u to enemies()
                 .map { it to it.distance(u) }
                 .filter { (e, dist) -> dist <= u.attackRange() }
