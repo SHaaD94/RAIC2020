@@ -1,10 +1,13 @@
-import debug.drawClusters
+import debug.clear
+import debug.drawArmyPF
 import debug.globalDebugInterface
+import impl.currentTick
 import impl.global.ClusterManager
 import impl.global.State
 import impl.global.initEntityStats
 import impl.micro.TurretsActionProvider
 import impl.micro.army.ArmyMovementManager
+import impl.micro.army.ArmyPF
 import impl.micro.workers.WorkersManager
 import impl.micro.workers.WorkersPF
 import impl.production.buildings.BuildingProductionManager
@@ -26,11 +29,13 @@ class MyStrategy {
 
     fun getAction(playerView: PlayerView, debugInterface: DebugInterface?): Action {
         globalDebugInterface = debugInterface
+//        debugInterface?.clear()
         initEntityStats(playerView)
         State.update(playerView)
         CellIndex.update(playerView)
         WorkersPF.update(playerView)
         ClusterManager.update(playerView)
+        ArmyPF.clearCaches()
 
         val resActions = mutableMapOf<Int, EntityAction>()
 
@@ -44,7 +49,8 @@ class MyStrategy {
             }
         }
 
-        debugInterface?.drawClusters()
+//        debugInterface?.drawClusters()
+//        if (currentTick() > 200) debugInterface?.drawArmyPF()
 
         return Action(resActions)
     }

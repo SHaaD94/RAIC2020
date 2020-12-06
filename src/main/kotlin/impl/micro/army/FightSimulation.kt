@@ -4,7 +4,7 @@ import model.Entity
 import model.EntityType
 
 object FightSimulation {
-    fun predictResult(myUnits: List<Entity>, enemies: List<Entity>): Result {
+    fun predictResultFast(myUnits: List<Entity>, enemies: List<Entity>): Result {
 
         fun scoreFunction(units: List<Entity>) =
             units
@@ -12,6 +12,10 @@ object FightSimulation {
                 .sum()
 
         return if (scoreFunction(myUnits) > scoreFunction(enemies)) Win else Loose
+    }
+
+    fun predictResultCorrectly(myUnits: List<Entity>, enemies: List<Entity>): Result {
+        TODO()
     }
 }
 

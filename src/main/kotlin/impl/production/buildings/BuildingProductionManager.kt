@@ -28,7 +28,6 @@ object BuildingProductionManager : ActionProvider {
             }
             totalSupply > 80 && currentTick() % 50 == 0 -> {
                 myWorkers()
-//                    .sortedByDescending { it.distance(Vec2Int(0, 0)) }
                     .shuffled()
                     .firstOrNull {
                         val possibleTurretPosition = it.position - TURRET.size()

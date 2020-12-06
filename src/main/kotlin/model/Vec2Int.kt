@@ -16,7 +16,7 @@ data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
         StreamUtil.writeInt(stream, y)
     }
 
-    fun toVecFloat() = Vec2Float(x.toFloat(), x.toFloat())
+    fun toVecFloat() = Vec2Float(x.toFloat(), y.toFloat())
 
     operator fun minus(v: Vec2Int) = Vec2Int(this.x - v.x, this.y - v.y)
     operator fun minus(s: Int) = Vec2Int(this.x - s, this.y - s)

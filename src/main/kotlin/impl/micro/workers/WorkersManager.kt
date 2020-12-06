@@ -14,11 +14,17 @@ object WorkersManager : ActionProvider {
     override fun provideActions(): Map<Int, EntityAction> {
         val resultActions = mutableMapOf<Int, EntityAction>()
 
+        var currentSpendResources = 0
+
         fun freeWorkers() = myWorkers().filter { !resultActions.containsKey(it.id) }
 
         BuildingProductionManager.buildingRequests
             .asSequence()
-//            .filter { availableResources() >= it.type.cost() }
+            .filter {
+                State.playerView.players
+                    .find { it.id == myPlayerId() }!!.resource + currentSpendResources >= it.type.cost()
+            }
+            .onEach { currentSpendResources += it.type.cost() }
             .map { constructBuilding(it, freeWorkers()) }
             .forEach { resultActions.putAll(it) }
 

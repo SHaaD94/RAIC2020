@@ -21,4 +21,5 @@ object CellIndex {
     }
 
     fun getUnit(v: Vec2Int): Entity? = index[v.x][v.y]
+    fun getUnit(x: Int, y: Int): Entity? = index[x][y]
 }
