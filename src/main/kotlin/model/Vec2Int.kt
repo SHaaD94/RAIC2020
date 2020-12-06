@@ -37,13 +37,15 @@ data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
 
     fun cellsWithinDistance(distance: Int): Sequence<Vec2Int> {
         val res = LinkedList<Vec2Int>()
+
+        var yDif = 0
         for (x in this.x - distance..this.x + distance) {
-            for (y in this.y - distance..this.y + distance) {
+            for (y in this.y - yDif..this.y + yDif) {
                 val c = Vec2Int(x, y)
                 if (!c.isValid()) continue
-
-                if (this.distance(c) <= distance) res.add(c)
+                res.add(c)
             }
+            if (x < this.x) yDif++ else yDif--
         }
         return res.asSequence()
     }

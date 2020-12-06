@@ -3,11 +3,9 @@ package debug
 import DebugInterface
 import impl.global.ClusterManager
 import impl.micro.army.ArmyPF
-import impl.micro.army.PFScore
 import impl.micro.workers.WorkersPF
 import impl.util.algo.distance
 import model.*
-import sun.security.util.Debug
 import kotlin.math.roundToInt
 import kotlin.random.Random
 

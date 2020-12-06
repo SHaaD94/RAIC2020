@@ -16,9 +16,10 @@ import impl.util.algo.CellIndex
 import model.Action
 import model.EntityAction
 import model.PlayerView
+import model.Vec2Int
 
 class MyStrategy {
-
+    var timeTotal = 0L
     val actionProviders = listOf(
         TurretsActionProvider,
         BuildingProductionManager,
@@ -28,6 +29,7 @@ class MyStrategy {
     )
 
     fun getAction(playerView: PlayerView, debugInterface: DebugInterface?): Action {
+        val start = System.currentTimeMillis()
         globalDebugInterface = debugInterface
 //        debugInterface?.clear()
         initEntityStats(playerView)
@@ -51,6 +53,9 @@ class MyStrategy {
 
 //        debugInterface?.drawClusters()
 //        if (currentTick() > 200) debugInterface?.drawArmyPF()
+
+        timeTotal += System.currentTimeMillis() - start
+        debugInterface?.let { println("Spent $timeTotal") }
 
         return Action(resActions)
     }

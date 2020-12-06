@@ -20,7 +20,7 @@ object ArmyMovementManager : ActionProvider {
         } else {
             myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
 
-                val cell = u.cellsWithinDistance(15)
+                val cell = u.cellsWithinDistance(5)
                     .map { it to ArmyPF.getMeleeScore(it).score }
                     .maxByOrNull { it.second }
                     ?.first ?: Vec2Int()

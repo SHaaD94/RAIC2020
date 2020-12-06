@@ -7,11 +7,12 @@ import model.Vec2Int
 import kotlin.math.min
 
 object UnitProductionDecisionMaker {
-    private const val maxWorkers = 40
+    private const val middleGameWorkers = 40
+    private const val lateGameWorkers = 60
     private const val defenseDistance = 60
 
     fun shouldProduceUnit(entity: Entity): Boolean {
-        return if (currentTick() < 200 && myWorkers().count() <= maxWorkers) {
+        return if (currentTick() < 200 && myWorkers().count() <= middleGameWorkers) {
             val allies = Vec2Int(0, 0).alliesWithinDistance(defenseDistance)
                 .filter { it.damage() > 1 }.map { it.health }.sum()
             val enemies = Vec2Int(0, 0).enemiesWithinDistance(defenseDistance)
@@ -22,15 +23,20 @@ object UnitProductionDecisionMaker {
                 EntityType.MELEE_BASE -> !underAttackButWillManage
                 EntityType.BUILDER_BASE -> underAttackButWillManage && myWorkers().count() < min(
                     resources().count(),
-                    maxWorkers
+                    middleGameWorkers
                 )
                 else -> true
             }
         } else {
             when (entity.entityType) {
                 EntityType.RANGED_BASE -> true
-                EntityType.MELEE_UNIT -> true
-                EntityType.BUILDER_BASE -> myWorkers().count() < min(resources().count(), maxWorkers)
+                EntityType.MELEE_BASE -> false
+                EntityType.BUILDER_BASE ->
+                    myWorkers().count() <
+                            min(
+                                resources().count(),
+                                if (currentTick() < 500) middleGameWorkers else lateGameWorkers
+                            )
                 else -> true
             }
         }

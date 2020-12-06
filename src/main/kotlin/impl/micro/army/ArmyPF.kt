@@ -3,7 +3,6 @@ package impl.micro.army
 import impl.*
 import impl.util.algo.CellIndex
 import impl.util.algo.distance
-import impl.util.algo.math.FastMath.pow
 import model.EntityType
 import model.Vec2Int
 import kotlin.math.max
@@ -15,9 +14,9 @@ data class Impulse(
     fun valueForDistance(dist: Double) = if (dist == 0.0) basicScore else fadeFunction(dist, basicScore)
 }
 
-data class PFScore(val score: Double)
+data class PFScore(val score: Double, val loosingFight: Boolean)
 object ArmyPF {
-    private val allyImpulse = Impulse(10.0) { distance, score ->
+    private val allyImpulse = Impulse(30.0) { distance, score ->
         if (distance == 0.0) 0.0 else max(score - distance, 0.0)
     }
     private val nearestEnemyAttractionImpulse = Impulse(1000000.0) { dist, score ->
@@ -46,39 +45,45 @@ object ArmyPF {
     }
 
     fun getMeleeScore(v: Vec2Int): PFScore =
-        meleeCache.computeIfAbsent(v) { calcMeleeScore(it) }
+        meleeCache.computeIfAbsent(v) { calcScoreInternal(it) }
 
-    private fun calcMeleeScore(v: Vec2Int): PFScore {
-        var currentMelee = 0.0
+    private fun calcScoreInternal(v: Vec2Int): PFScore {
+        var current = 0.0
+        var loosingFight = false
         // ------------- COMMON
-        // -- 1. gravity coefficient
+
+        // -- 0. Remove cell if is busy by building
         val unitInCell = CellIndex.getUnit(v)
 
         if (unitInCell?.isBuilding() == true) {
-            return PFScore(Double.MIN_VALUE)
+            return PFScore(Double.MIN_VALUE, false)
         }
 
-        currentMelee += resources().map { it.distance(v) }.minOrNull()?.let {
+        // -- 1. Repelling from resources
+        current += resources().map { it.distance(v) }.minOrNull()?.let {
             resourceRepellingImpulse.valueForDistance(it)
         } ?: 0.0
 
+        // -- 2. gravity coefficient
         v.alliesWithinDistance(10).filter { it.isUnit() }.filter { it.entityType != EntityType.BUILDER_UNIT }.forEach {
             val score = allyImpulse.valueForDistance(it.distance(v))
-            currentMelee += score
+            current += score
         }
 
-        // -- 2. enemy distance coefficient
+        // -- 3. enemy attraction
         val attractionPointScore = nearestEnemyAttractionImpulse.valueForDistance(
             v.distance(enemies().minByOrNull { it.distance(v) }?.position ?: Vec2Int(30, 30))
         )
 
-        currentMelee += attractionPointScore
+        current += attractionPointScore
 
+        // -- 4. danger score
         enemies().forEach {
             val danderScore = enemyDangerImpulse.valueForDistance(it.distance(v))
-            currentMelee += danderScore
+            current += danderScore
         }
 
+        // -- 5. simulation score
         val eToDistance = enemies().map { it to it.distance(v) }
         if (eToDistance.any { it.second < 10.0 }) {
             val myUnit = myArmy().minByOrNull { it.distance(v) }
@@ -88,17 +93,15 @@ object ArmyPF {
                     enemyUnit?.enemiesWithinDistance(7)?.filter { it.damage() > 1 }?.toList() ?: emptyList()
                 ) == Loose
             ) {
-                currentMelee +=
+                loosingFight = true
+                current +=
                     enemyUnit?.let {
                         simulationLooseImpulse.valueForDistance(it.distance(v.x, v.y))
                     } ?: 0.0
             }
         }
 
-        // ------------- MELEE
-
-
-        return PFScore(currentMelee)
+        return PFScore(current, loosingFight)
     }
 
 //    fun getRange(v: Vec2Int) = range[v.x][v.y]

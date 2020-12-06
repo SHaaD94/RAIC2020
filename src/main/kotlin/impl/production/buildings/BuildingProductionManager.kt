@@ -4,7 +4,6 @@ import impl.*
 import impl.global.State.availableSupply
 import impl.global.State.totalSupply
 import impl.util.algo.CellIndex
-import impl.util.algo.distance
 import impl.util.intersects
 import model.*
 import model.EntityType.*
@@ -61,7 +60,14 @@ object BuildingProductionManager : ActionProvider {
     fun reservedResources() = buildingRequests.sumBy { it.type.cost() }
 
     private fun requestBuilding(type: EntityType, position: Vec2Int? = null) {
-        buildingRequests.add(BuildingRequest(type, position ?: findPosition(type)))
+        buildingRequests.add(
+            BuildingRequest(
+                type, position ?: when (type) {
+                    HOUSE -> findSupplyPosition()
+                    else -> findPosition(type)
+                }
+            )
+        )
     }
 
     private fun monitorBuildingsRequests() {
@@ -84,13 +90,26 @@ object BuildingProductionManager : ActionProvider {
                             if (it.isBuilding()) it.size() + 2 else it.size()
                         )
                 }
-            }.forEach { it.coordinate = findPosition(it.type) }
+            }.forEach {
+                it.coordinate = when (it.type) {
+                    HOUSE -> findSupplyPosition()
+                    else -> findPosition(it.type)
+                }
+            }
     }
 
     private fun numbersOfBuildingsInQueue(type: EntityType) =
         buildingRequests.count { it.type == type } + myBuildings(type).count { !it.active }
 
-    //TODO place for optimizations
+    private val supplyPositions = listOf(Vec2Int(0, 0)) + (4..21 step 3).map { Vec2Int(it, 0) } +
+            (3..21 step 3).map { Vec2Int(0, it) }
+
+    private fun findSupplyPosition(): Vec2Int {
+        return supplyPositions.find { v ->
+            v.cellsCovered(HOUSE.size()).none { CellIndex.getUnit(it) != null }
+        } ?: findPosition(HOUSE)
+    }
+
     private fun findPosition(buildingType: EntityType): Vec2Int {
         val supplyPos: Vec2Int
         val supplySize = buildingType.size()
