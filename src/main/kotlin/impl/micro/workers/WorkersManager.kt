@@ -69,8 +69,10 @@ object WorkersManager : ActionProvider {
         }.toMap()
     }
 
-    private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
-        freeWorkers.mapNotNull { w ->
+    private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> {
+        val busyResources = HashSet<Vec2Int>()
+
+        return freeWorkers.mapNotNull { w ->
             if (WorkersPF.getScore(w.position) < 0) {
                 w.id to w.moveAction(Vec2Int(), true, true)
             } else {
@@ -78,11 +80,12 @@ object WorkersManager : ActionProvider {
                     resources().filter { WorkersPF.getScore(it.position) >= 0 }
                         .minByOrNull { w.distance(it) } ?: return@mapNotNull null
 
-                if (closestResourceWithoutEnemies.distance(w) < 20) {
+                if (closestResourceWithoutEnemies.distance(w) < 10) {
                     //TODO THIS MIGHT BE REDUCED LATER
-                    val bestNearestResource = findClosestResource(w.position, 25)
+                    val bestNearestResource = findClosestResource(w.position, 10) { !busyResources.contains(it) }
 
                     if (bestNearestResource != null) {
+                        busyResources.add(bestNearestResource.position)
                         return@mapNotNull w.id to w.moveAction(bestNearestResource.position, true, true)
                     }
                 }
@@ -97,6 +100,7 @@ object WorkersManager : ActionProvider {
                 }
             }
         }.toMap()
+    }
 
     private fun runTo00(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers

@@ -25,7 +25,7 @@ fun findClosestResource(
     findClosestEntity(
         startingPoint,
         EntityType.RESOURCE,
-        positionFilter = { v -> WorkersPF.getScore(v) > 0 },
+        positionFilter = { v -> WorkersPF.getScore(v) >= 0 && positionFilter(v) },
         maxCells = maxCells
     )
 

@@ -43,8 +43,8 @@ object BuildingProductionManager : ActionProvider {
                 requestBuilding(BUILDER_BASE)
             myBuildings(RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
                 requestBuilding(RANGED_BASE)
-            myBuildings(MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
-                requestBuilding(MELEE_BASE)
+//            myBuildings(MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
+//                requestBuilding(MELEE_BASE)
             totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(HOUSE) < 2 -> {
                 requestBuilding(HOUSE)
             }
