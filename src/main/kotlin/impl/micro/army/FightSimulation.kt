@@ -1,8 +1,8 @@
 package impl.micro.army
 
-import impl.myPlayerId
 import model.Entity
 import model.EntityType
+import kotlin.math.max
 
 object FightSimulation {
     fun predictResultFast(myUnits: List<Entity>, enemies: List<Entity>): Result {
@@ -11,7 +11,7 @@ object FightSimulation {
             units
                 .asSequence()
                 .map {
-                    it.damage() * it.attackRange() * it.health *
+                    it.damage() * max(it.attackRange() - 1, 1) * it.health *
                             when (it.entityType) {
                                 EntityType.TURRET -> 0.4
 //                                EntityType.MELEE_UNIT -> if (it.playerId == myPlayerId()) 0.75 else 1.25

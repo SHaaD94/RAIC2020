@@ -100,7 +100,7 @@ fun DebugInterface.drawText(v1: Vec2Int, text: String, c: Color = Color(0.0F, 0F
                 ColoredVertex(v1.toVecFloat(), screenOffset, c),
                 text,
                 0.1F,
-                10F
+                30F
             )
         )
     )

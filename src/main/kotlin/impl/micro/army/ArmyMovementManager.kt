@@ -19,18 +19,10 @@ object ArmyMovementManager : ActionProvider {
             earlyGame(resultActions, mainBase)
         } else {
             myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-                val cellsToCheck = if (u.enemiesWithinDistance(10).any()) {
-                    sequenceOf(
-                        u.position,
-                        u.position.copy(x = u.position.x - 5),
-                        u.position.copy(x = u.position.x - 5, y = u.position.y + 5),
-                        u.position.copy(x = u.position.x + 5),
-                        u.position.copy(y = u.position.y + 5),
-                        u.position.copy(y = u.position.y - 5),
-                        u.position.copy(x = u.position.x + 5, y = u.position.y - 5),
-                        u.position + 5,
-                        u.position - 5
-                    ).filter { it.isValid() }
+                val cellsToCheck = if (u.enemiesWithinDistance(30).none()) {
+                    coarseCellsToCheck(u, 15)
+                } else if (u.enemiesWithinDistance(10).none()) {
+                    coarseCellsToCheck(u, 7)
                 } else {
                     u.cellsWithinDistance(5)
                 }
@@ -46,6 +38,18 @@ object ArmyMovementManager : ActionProvider {
         return resultActions
     }
 
+    private fun coarseCellsToCheck(u: Entity, coarseDist: Int) = sequenceOf(
+        u.position,
+        u.position.copy(x = u.position.x - coarseDist),
+        u.position.copy(x = u.position.x - coarseDist, y = u.position.y + coarseDist),
+        u.position.copy(x = u.position.x + coarseDist),
+        u.position.copy(y = u.position.y + coarseDist),
+        u.position.copy(y = u.position.y - coarseDist),
+        u.position.copy(x = u.position.x + coarseDist, y = u.position.y - coarseDist),
+        u.position + coarseDist,
+        u.position - coarseDist
+    ).filter { it.isValid() }
+
     private fun earlyGame(resultActions: MutableMap<Int, EntityAction>, mainBase: Entity) {
         myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
             val e = enemies().map { it to it.distance(mainBase) }.filter { it.second < 40 }
@@ -56,7 +60,7 @@ object ArmyMovementManager : ActionProvider {
     }
 
     private fun autoAttack(resultActions: MutableMap<Int, EntityAction>) {
-        myArmy().filter { !ArmyPF.getMeleeScore(it.position).loosingFight }.map { u ->
+        myArmy()/*.filter { !ArmyPF.getMeleeScore(it.position).loosingFight }*/.map { u ->
             u to enemies()
                 .map { it to it.distance(u) }
                 .filter { (e, dist) -> dist <= u.attackRange() }

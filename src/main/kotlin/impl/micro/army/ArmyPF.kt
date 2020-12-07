@@ -16,11 +16,11 @@ data class Impulse(
 
 data class PFScore(val score: Double, val loosingFight: Boolean)
 object ArmyPF {
-    private val allyImpulse = Impulse(15.0) { distance, score ->
-        if (distance == 0.0) 0.0 else max(score - distance, 0.0)
+    private val allyImpulse = Impulse(1.0) { distance, score ->
+        if (distance == 0.0) 0.0 else max(score - distance * 0.1, 0.0)
     }
-    private val nearestEnemyAttractionImpulse = Impulse(1000000.0) { dist, score ->
-        score - dist * 100
+    private val nearestEnemyAttractionImpulse = Impulse(1000.0) { dist, score ->
+        score - dist * (dist * 0.5)
     }
     private val resourceRepellingImpulse = Impulse(-100.0) { dist, score ->
         when (dist) {
@@ -31,12 +31,12 @@ object ArmyPF {
         }
     }
 
-    private val simulationLooseImpulse = Impulse(-1000.0) { dist, score ->
-        if (dist > 10) 0.0 else score - dist * 50
+    private val simulationLooseImpulse = Impulse(-500.0) { dist, score ->
+        if (dist > 5) 0.0 else score + dist * 50
     }
 
-    private val enemyDangerImpulse = Impulse(-10.0) { dist, score ->
-        max(score - dist, 0.0)
+    private val enemyDangerImpulse = Impulse(-100.0) { dist, score ->
+        max(score + dist * dist, 0.0)
     }
 
     private val meleeCache = HashMap<Vec2Int, PFScore>()
@@ -64,10 +64,13 @@ object ArmyPF {
             resourceRepellingImpulse.valueForDistance(it)
         } ?: 0.0
 
-        // -- 2. gravity coefficient
-        v.alliesWithinDistance(10).filter { it.isUnit() }.filter { it.entityType != EntityType.BUILDER_UNIT }.forEach {
-            val score = allyImpulse.valueForDistance(it.distance(v))
-            current += score
+        if (v.enemiesWithinDistance(10).filter { it.damage() > 1 }.any()) {
+            // -- 2. gravity coefficient
+            v.alliesWithinDistance(10)
+                .filter { it.entityType == EntityType.RANGED_UNIT || it.entityType == EntityType.MELEE_UNIT }.forEach {
+                    val score = allyImpulse.valueForDistance(it.distance(v))
+                    current += score
+                }
         }
 
         // -- 3. enemy attraction
@@ -78,25 +81,29 @@ object ArmyPF {
         current += attractionPointScore
 
         // -- 4. danger score
-        enemies().forEach {
-            val danderScore = enemyDangerImpulse.valueForDistance(it.distance(v))
-            current += danderScore
-        }
+//        v.enemiesWithinDistance(15).forEach {
+//            val danderScore = enemyDangerImpulse.valueForDistance(it.distance(v))
+//            current += danderScore
+//        }
 
         // -- 5. simulation score
-        val e = v.entitiesWithinDistance(10).filter { it.playerId != null }.filter { it.damage() > 1 }
-        if (e.filter { it.playerId != myPlayerId() }.any()) {
-            val myUnits = e.filter { it.playerId == myPlayerId() }.toList()
-            val enemies = e.filter { it.playerId != myPlayerId() }.toList()
-            if ((FightSimulation.predictResultFast(myUnits, enemies)) == Loose) {
+        val eToDistance = v.enemiesWithinDistance(7).filter { it.damage() > 1 }
+        if (eToDistance.any()) {
+            val myUnit = v.alliesWithinDistance(7).filter { it.damage() > 1 }.minByOrNull { it.distance(v) }
+            val enemyUnit = eToDistance.minByOrNull { it.distance(v) }
+            if (FightSimulation.predictResultFast(
+                    myUnit?.alliesWithinDistance(7)?.filter { it.damage() > 1 }?.toList() ?: emptyList(),
+                    enemyUnit?.enemiesWithinDistance(7)?.filter { it.damage() > 1 }?.toList() ?: emptyList()
+                ) == Loose
+            ) {
                 loosingFight = true
                 current +=
-                    e.minByOrNull { it.distance(v) }?.let {
+                    enemyUnit?.let {
                         simulationLooseImpulse.valueForDistance(it.distance(v.x, v.y))
                     } ?: 0.0
             }
-
         }
+
 
         return PFScore(current, loosingFight)
     }
