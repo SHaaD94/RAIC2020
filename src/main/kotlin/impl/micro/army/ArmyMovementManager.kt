@@ -60,7 +60,9 @@ object ArmyMovementManager : ActionProvider {
     }
 
     private fun autoAttack(resultActions: MutableMap<Int, EntityAction>) {
-        myArmy()/*.filter { !ArmyPF.getMeleeScore(it.position).loosingFight }*/.map { u ->
+        myArmy()
+//            .filter { !ArmyPF.getMeleeScore(it.position).loosingFight }
+            .map { u ->
             u to enemies()
                 .map { it to it.distance(u) }
                 .filter { (e, dist) -> dist <= u.attackRange() }

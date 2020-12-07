@@ -1,4 +1,3 @@
-import debug.clear
 import debug.drawArmyPF
 import debug.globalDebugInterface
 import impl.currentTick
@@ -16,7 +15,6 @@ import impl.util.algo.CellIndex
 import model.Action
 import model.EntityAction
 import model.PlayerView
-import model.Vec2Int
 
 class MyStrategy {
     var timeTotal = 0L
@@ -37,7 +35,7 @@ class MyStrategy {
         CellIndex.update(playerView)
         WorkersPF.update(playerView)
         ClusterManager.update(playerView)
-        ArmyPF.clearCaches()
+        ArmyPF.clearCachesAndUpdate()
 
         val resActions = mutableMapOf<Int, EntityAction>()
 

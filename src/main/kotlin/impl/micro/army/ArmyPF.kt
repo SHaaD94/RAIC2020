@@ -31,8 +31,8 @@ object ArmyPF {
         }
     }
 
-    private val simulationLooseImpulse = Impulse(-500.0) { dist, score ->
-        if (dist > 5) 0.0 else score + dist * 50
+    private val simulationLooseImpulse = Impulse(-2000.0) { dist, score ->
+        score + dist * 50
     }
 
     private val enemyDangerImpulse = Impulse(-100.0) { dist, score ->
@@ -40,8 +40,28 @@ object ArmyPF {
     }
 
     private val meleeCache = HashMap<Vec2Int, PFScore>()
-    fun clearCaches() {
+
+    private var failedSimulationPoints = listOf<Vec2Int>()
+
+
+    fun clearCachesAndUpdate() {
         meleeCache.clear()
+        failedSimulationPoints =
+            myArmy().mapNotNull { u ->
+                val enemiesInThePoint = u.enemiesWithinDistance(10).filter { it.damage() > 1 }
+
+                if (enemiesInThePoint.none()) return@mapNotNull null
+
+                val closestEnemy = enemiesInThePoint.map { it to it.distance(u) }.minByOrNull { it.second }!!.first
+                val enemies = closestEnemy.enemiesWithinDistance(7).filter { it.damage() > 1 }.toList()
+                val allies = u.alliesWithinDistance(7).filter { it.damage() > 1 }.toList()
+
+                if (
+                    FightSimulation.predictResultFast(allies, enemies) == Loose
+                )
+//                        (u.position + closestEnemy.position) / 2 else null
+                    closestEnemy.position else null
+            }.toList()
     }
 
     fun getMeleeScore(v: Vec2Int): PFScore =
@@ -60,7 +80,8 @@ object ArmyPF {
         }
 
         // -- 1. Repelling from resources
-        current += resources().map { it.distance(v) }.minOrNull()?.let {
+        current += v.cellsWithinDistance(2).filter { CellIndex.getUnit(it)?.entityType == EntityType.RESOURCE }
+            .map { it.distance(v) }.minOrNull()?.let {
             resourceRepellingImpulse.valueForDistance(it)
         } ?: 0.0
 
@@ -87,24 +108,12 @@ object ArmyPF {
 //        }
 
         // -- 5. simulation score
-        val eToDistance = v.enemiesWithinDistance(7).filter { it.damage() > 1 }
-        val allies = v.alliesWithinDistance(7)
-        if (eToDistance.any() && allies.any()) {
-            val myUnit = v.alliesWithinDistance(7).filter { it.damage() > 1 }.minByOrNull { it.distance(v) }
-            val enemyUnit = eToDistance.minByOrNull { it.distance(v) }
-            if (FightSimulation.predictResultFast(
-                    myUnit?.alliesWithinDistance(7)?.filter { it.damage() > 1 }?.toList() ?: emptyList(),
-                    enemyUnit?.enemiesWithinDistance(7)?.filter { it.damage() > 1 }?.toList() ?: emptyList()
-                ) == Loose
-            ) {
+        failedSimulationPoints.map { it to it.distance(v) }.filter { it.second < 7 }.minByOrNull { it.second }
+            ?.let { (failSimPoint, _) ->
                 loosingFight = true
                 current +=
-                    enemyUnit?.let {
-                        simulationLooseImpulse.valueForDistance(it.distance(v.x, v.y))
-                    } ?: 0.0
+                    simulationLooseImpulse.valueForDistance(failSimPoint.distance(v))
             }
-        }
-
 
         return PFScore(current, loosingFight)
     }

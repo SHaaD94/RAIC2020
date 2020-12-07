@@ -22,7 +22,7 @@ object ClusterManager {
             .filter { it.isUnit() }
             .filter { it.damage() > 1 }.toList()
         this.clusters =
-            if (enitiesToCluster.isNotEmpty()) {
+            if (enitiesToCluster.count() > 2) {
                 DBSCANClusterer(
                     enitiesToCluster, minClusterSize, clusteringDistance,
                     object : DistanceMetric<Entity> {
