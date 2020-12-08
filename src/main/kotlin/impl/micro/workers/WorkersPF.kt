@@ -20,13 +20,11 @@ object WorkersPF {
             }
         }
 
-        val enemyRangeThreshold = 6
-
         enemies()
             .filter { it.damage() > 1 }
             .filter { it.entityType != EntityType.BUILDER_UNIT }
             .forEach { e ->
-                e.cellsWithinDistance(enemyRangeThreshold).forEach { c ->
+                e.cellsWithinDistance(e.attackRange() + 2).forEach { c ->
 //                    if (e.attackRange() + 2 < e.distance(c)) return@forEach
                     field[c.x][c.y] += (-e.damage() * (e.distance(c) / (e.attackRange()))).roundToInt()
                 }

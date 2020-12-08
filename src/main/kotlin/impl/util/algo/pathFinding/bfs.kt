@@ -22,13 +22,18 @@ fun findClosestResource(
     maxCells: Int = 10,
     positionFilter: (Vec2Int) -> Boolean = { true }
 ): Entity? =
-    findClosestEntity(startingPoint, EntityType.RESOURCE, entityFilter = { v -> WorkersPF.getScore(v) > 0 })
+    findClosestEntity(
+        startingPoint,
+        EntityType.RESOURCE,
+        positionFilter = { v -> WorkersPF.getScore(v) >= 0 && positionFilter(v) },
+        maxCells = maxCells
+    )
 
 fun findClosestEntity(
     startingPoint: Vec2Int,
     type: EntityType,
     maxCells: Int = 10,
-    entityFilter: (Vec2Int) -> Boolean = { true }
+    positionFilter: (Vec2Int) -> Boolean = { true }
 ): Entity? {
     visited.clear()
 
@@ -47,7 +52,7 @@ fun findClosestEntity(
 
         cur.validCellsAround()
             .filter { !visited.contains(it) }
-            .filter { entityFilter(it) }
+            .filter { positionFilter(it) }
             .filter { CellIndex.getUnit(it) == null || CellIndex.getUnit(it)?.entityType == type }
             .forEach { c ->
                 toVisit.add(c)

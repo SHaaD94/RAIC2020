@@ -9,24 +9,22 @@ import model.Vec2Int
 
 data class Cluster(val unitIds: Set<Int>, val units: List<Entity>, val centroid: Vec2Int, val playerId: Int)
 
-data class MovePosition(val v: Vec2Int)
+data class ClusterMove(val v: Vec2Int)
 
 object ClusterManager {
-    var clusters: List<Cluster> = listOf()
-//
-//    var cluster2Position = mapOf<Cluster, Vec2Int>()
-//
-//    fun getMoveForUnit(entity: Entity): MovePosition {
-//
-//    }
+    private const val clusteringDistance = 3.0
+    private const val minClusterSize = 3
 
+    var clusters: List<Cluster> = listOf()
 
     fun update(playerView: PlayerView) {
-        val enitiesToCluster = playerView.entities.filter { it.damage() > 1 }.toList()
+        val enitiesToCluster = playerView.entities
+            .filter { it.isUnit() }
+            .filter { it.damage() > 1 }.toList()
         this.clusters =
-            if (enitiesToCluster.isNotEmpty()) {
+            if (enitiesToCluster.count() > 2) {
                 DBSCANClusterer(
-                    enitiesToCluster, 5, 5.0,
+                    enitiesToCluster, minClusterSize, clusteringDistance,
                     object : DistanceMetric<Entity> {
                         override fun calculateDistance(val1: Entity, val2: Entity): Int {
                             if (val1.playerId != val2.playerId) return 1_000_000
@@ -46,6 +44,5 @@ object ClusterManager {
                         unitArray.first().playerId!!
                     )
                 }
-
     }
 }

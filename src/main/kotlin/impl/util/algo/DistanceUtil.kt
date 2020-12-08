@@ -15,9 +15,13 @@ fun Vec2Float.distance(v: Vec2Float): Double =
 fun Vec2Int.distance(v: Vec2Int): Double =
     manhattanDistance(this.x, v.x, this.y, v.y).toDouble()
 
+fun Vec2Int.distance(x: Int, y: Int): Double =
+    manhattanDistance(this.x, x, this.y, y).toDouble()
+
 fun Entity.distance(entity: Entity): Double = this.position.distance(entity.position)
 
 fun Entity.distance(v: Vec2Int): Double = this.position.distance(v)
+fun Entity.distance(x: Int, y: Int): Double = this.position.distance(x, y)
 
 fun Vec2Float.euclidDistance(v: Vec2Float): Double =
     FastMath.hypot((v.x - this.x).toDouble(), (v.y - this.y).toDouble())

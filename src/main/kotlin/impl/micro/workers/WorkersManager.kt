@@ -8,16 +8,23 @@ import impl.util.*
 import impl.util.algo.distance
 import impl.util.algo.pathFinding.findClosestResource
 import model.*
+import kotlin.math.min
 
 object WorkersManager : ActionProvider {
     override fun provideActions(): Map<Int, EntityAction> {
         val resultActions = mutableMapOf<Int, EntityAction>()
 
+        var currentSpendResources = 0
+
         fun freeWorkers() = myWorkers().filter { !resultActions.containsKey(it.id) }
 
         BuildingProductionManager.buildingRequests
             .asSequence()
-//            .filter { availableResources() >= it.type.cost() }
+            .filter {
+                State.playerView.players
+                    .find { it.id == myPlayerId() }!!.resource + currentSpendResources >= it.type.cost()
+            }
+            .onEach { currentSpendResources += it.type.cost() }
             .map { constructBuilding(it, freeWorkers()) }
             .forEach { resultActions.putAll(it) }
 
@@ -53,14 +60,19 @@ object WorkersManager : ActionProvider {
         val busyWorkers = mutableSetOf<Int>()
 
         return myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
-            freeWorkers.filter { !busyWorkers.contains(it.id) }.sortedBy { it.distance(b) }.take(b.maxHP() / 25)
+            freeWorkers.filter { !busyWorkers.contains(it.id) }
+                .filter { it.distance(b) < 20 }
+                .sortedBy { it.distance(b) }
+                .take(min(b.maxHP() / 25, 3))
                 .onEach { busyWorkers.add(it.id) }
                 .map { it.id to repairBuilding(it, b) }
         }.toMap()
     }
 
-    private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
-        freeWorkers.mapNotNull { w ->
+    private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> {
+        val busyResources = HashSet<Vec2Int>()
+
+        return freeWorkers.mapNotNull { w ->
             if (WorkersPF.getScore(w.position) < 0) {
                 w.id to w.moveAction(Vec2Int(), true, true)
             } else {
@@ -68,11 +80,12 @@ object WorkersManager : ActionProvider {
                     resources().filter { WorkersPF.getScore(it.position) >= 0 }
                         .minByOrNull { w.distance(it) } ?: return@mapNotNull null
 
-                if (closestResourceWithoutEnemies.distance(w) < 20) {
+                if (closestResourceWithoutEnemies.distance(w) < 10) {
                     //TODO THIS MIGHT BE REDUCED LATER
-                    val bestNearestResource = findClosestResource(w.position, 25)
+                    val bestNearestResource = findClosestResource(w.position, 10) { !busyResources.contains(it) }
 
                     if (bestNearestResource != null) {
+                        busyResources.add(bestNearestResource.position)
                         return@mapNotNull w.id to w.moveAction(bestNearestResource.position, true, true)
                     }
                 }
@@ -87,6 +100,7 @@ object WorkersManager : ActionProvider {
                 }
             }
         }.toMap()
+    }
 
     private fun runTo00(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> =
         freeWorkers
