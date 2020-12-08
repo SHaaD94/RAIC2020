@@ -4,6 +4,7 @@ import impl.*
 import model.Entity
 import model.EntityType
 import model.Vec2Int
+import model.cost
 import kotlin.math.min
 
 object UnitProductionDecisionMaker {
@@ -30,7 +31,7 @@ object UnitProductionDecisionMaker {
         } else {
             when (entity.entityType) {
                 EntityType.RANGED_BASE -> true
-                EntityType.MELEE_BASE -> false
+                EntityType.MELEE_BASE -> EntityType.MELEE_UNIT.cost() <= EntityType.RANGED_UNIT.cost() / 2
                 EntityType.BUILDER_BASE ->
                     myWorkers().count() <
                             min(
