@@ -16,11 +16,11 @@ data class Impulse(
 
 data class PFScore(val score: Double, val loosingFight: Boolean)
 object ArmyPF {
-    private val allyImpulse = Impulse(1.0) { distance, score ->
-        if (distance == 0.0) 0.0 else max(score - distance * 0.1, 0.0)
+    private val allyImpulse = Impulse(30.0) { distance, score ->
+        if (distance == 0.0) 0.0 else max(score - distance, 0.0)
     }
-    private val nearestEnemyAttractionImpulse = Impulse(1000.0) { dist, score ->
-        score - dist * (dist * 0.5)
+    private val nearestEnemyAttractionImpulse = Impulse(1000000.0) { dist, score ->
+        score - dist * 100
     }
     private val resourceRepellingImpulse = Impulse(-100.0) { dist, score ->
         when (dist) {

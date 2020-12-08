@@ -15,7 +15,7 @@ object FightSimulation {
                     it.damage() * max(it.attackRange() - 1, 1) * it.health *
                             when (it.entityType) {
                                 EntityType.TURRET -> 0.4
-                                EntityType.MELEE_UNIT -> if (it.playerId == myPlayerId()) 1.5 else 0.75
+//                                EntityType.MELEE_UNIT -> if (it.playerId == myPlayerId()) 1.5 else 0.75
                                 else -> 1.0
                             }
                 }
