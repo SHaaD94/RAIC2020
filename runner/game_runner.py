@@ -11,6 +11,7 @@ import subprocess
 import json
 
 current_version_path = '../target/aicup2020-jar-with-dependencies.jar'
+versions_path = 'versions/'
 
 
 class GameResult:
@@ -63,9 +64,14 @@ def run_games(folder, repeats):
         for p in players[1:]:
             if p != 'QuickStart':
                 port = p['Tcp']['port']
+                if 'v' not in p['Tcp'] or p['Tcp']['v'] == 'current':
+                    version_jar = current_version_path
+                else:
+                    version_jar = f"{versions_path}{p['Tcp']['v']}.jar"
+
                 _ = subprocess.Popen(['java',
                                       '-jar',
-                                      f'{folder}/v.jar', '127.0.0.1', f'{port}'])
+                                      version_jar, '127.0.0.1', f'{port}'])
 
         runner_process.wait()
 
