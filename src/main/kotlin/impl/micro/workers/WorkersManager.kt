@@ -5,6 +5,7 @@ import impl.global.State
 import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
 import impl.util.*
+import impl.util.algo.CellIndex
 import impl.util.algo.distance
 import impl.util.algo.pathFinding.findClosestResource
 import model.*
@@ -82,7 +83,10 @@ object WorkersManager : ActionProvider {
 
                 if (closestResourceWithoutEnemies.distance(w) < 10) {
                     //TODO THIS MIGHT BE REDUCED LATER
-                    val bestNearestResource = findClosestResource(w.position, 10) { !busyResources.contains(it) }
+                    val bestNearestResource = findClosestResource(
+                        w.position,
+                        10
+                    ) { !busyResources.contains(it) && CellIndex.getUnit(it) == null }
 
                     if (bestNearestResource != null) {
                         busyResources.add(bestNearestResource.position)
@@ -93,7 +97,7 @@ object WorkersManager : ActionProvider {
                     }
                 }
 
-                w.id to if (closestResourceWithoutEnemies.distance(w) > 15) {
+                w.id to if (closestResourceWithoutEnemies.distance(w) > 5) {
                     w.moveAction(closestResourceWithoutEnemies.position, true, true)
                 } else {
                     if (closestResourceWithoutEnemies.distance(w) == 1.0) {
