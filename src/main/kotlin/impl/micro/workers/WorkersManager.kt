@@ -86,6 +86,9 @@ object WorkersManager : ActionProvider {
 
                     if (bestNearestResource != null) {
                         busyResources.add(bestNearestResource.position)
+                        if (bestNearestResource.distance(w) == 1.0) {
+                            State.playerView.players.find { it.id == myPlayerId() }!!.resource += 1
+                        }
                         return@mapNotNull w.id to w.moveAction(bestNearestResource.position, true, true)
                     }
                 }
@@ -93,6 +96,9 @@ object WorkersManager : ActionProvider {
                 w.id to if (closestResourceWithoutEnemies.distance(w) > 15) {
                     w.moveAction(closestResourceWithoutEnemies.position, true, true)
                 } else {
+                    if (closestResourceWithoutEnemies.distance(w) == 1.0) {
+                        State.playerView.players.find { it.id == myPlayerId() }!!.resource += 1
+                    }
                     w.attackAction(
                         closestResourceWithoutEnemies,
                         AutoAttack(State.maxPathfindNodes, EntityType.values())
