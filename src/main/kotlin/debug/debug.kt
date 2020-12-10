@@ -28,7 +28,7 @@ fun drawWorkersPf(debugInterface: DebugInterface) {
 
 fun DebugInterface.drawArmyPF() {
     val gradient = ColorGradient(Color(1F, 0F, 0F, 0.3F), Color(0F, 1F, 0F, 0.3F))
-    val pf = Array(80) { x -> Array(80) { y -> ArmyPF.getRangeScore(Vec2Int(x, y)) } }
+    val pf = Array(80) { x -> Array(80) { y -> ArmyPF.getRangeScore(Vec2Int(x, y), null) } }
     val min = pf.flatMap { it.toList().map { it.score } }.filter { it != Double.MIN_VALUE }.minOrNull()!!
     val max = pf.flatMap { it.toList().map { it.score } }.filter { it != Double.MIN_VALUE }.maxOrNull()!!
 
@@ -79,8 +79,8 @@ fun DebugInterface.drawLine(v1: Vec2Int, v2: Vec2Int, c: Color) {
         DebugCommand.Add(
             DebugData.Primitives(
                 arrayOf(
-                    ColoredVertex(v1.toVecFloat(), screenOffset, c),
-                    ColoredVertex(v2.toVecFloat(), screenOffset, c)
+                    ColoredVertex(v1.toVecFloat() + 0.5F, screenOffset, c),
+                    ColoredVertex(v2.toVecFloat() + 0.5F, screenOffset, c)
                 ),
                 PrimitiveType.LINES
             )

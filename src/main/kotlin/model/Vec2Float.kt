@@ -17,6 +17,7 @@ data class Vec2Float(val x: Float = 0.0F, val y: Float = 0.0F) : Comparable<Vec2
 
     operator fun minus(v: Vec2Float) = Vec2Float(this.x - v.x, this.y - v.y)
     operator fun plus(v: Vec2Float) = Vec2Float(this.x + v.x, this.y + v.y)
+    operator fun plus(v: Float) = Vec2Float(this.x + v, this.y + v)
 
     override fun compareTo(other: Vec2Float): Int {
         if (x < other.x) return -1

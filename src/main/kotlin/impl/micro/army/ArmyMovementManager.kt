@@ -1,10 +1,16 @@
 package impl.micro.army
 
+import debug.drawArmyPF
+import debug.drawSquare
+import debug.drawText
+import debug.globalDebugInterface
 import impl.*
 import impl.util.algo.distance
+import impl.util.algo.pathFinding.findRoute
 import impl.util.attackAction
 import impl.util.moveAction
 import model.*
+import kotlin.math.roundToInt
 
 object ArmyMovementManager : ActionProvider {
     override fun provideActions(): Map<Int, EntityAction> {
@@ -19,19 +25,23 @@ object ArmyMovementManager : ActionProvider {
             earlyGame(resultActions, mainBase)
         } else {
             myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-                val cellsToCheck = when {
-                    u.enemiesWithinDistance(30).none() -> coarseCellsToCheck(u, 15)
-                    u.enemiesWithinDistance(10).none() -> coarseCellsToCheck(u, 7)
-                    else -> u.cellsWithinDistance(5)
-                }
-                val cell = cellsToCheck
+                val closestEnemy = enemies().minByOrNull { u.distance(it) }?.position ?: Vec2Int(40, 40)
+                val route = findRoute(u.position, closestEnemy, u)
+                val cell = u.validCellsAround()
                     .map {
                         it to
                                 if (u.entityType == EntityType.RANGED_UNIT) {
-                                    ArmyPF.getRangeScore(it).score
+                                    ArmyPF.getRangeScore(it, route.getOrNull(1)).score
                                 } else {
                                     ArmyPF.getMeleeScore(it).score
                                 }
+                    }
+                    .onEach { (v, score) ->
+                        globalDebugInterface?.drawText(
+                            v,
+                            ((score * 10000).roundToInt() / 10000.0).toString()
+                        )
+
                     }
                     .maxByOrNull { it.second }
                     ?.first ?: Vec2Int()

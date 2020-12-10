@@ -65,23 +65,22 @@ object ArmyPF {
             }.toList()
     }
 
-    fun getRangeScore(v: Vec2Int): PFScore =
-        rangeCache.computeIfAbsent(v) {
-            val commonScore = commonCache.computeIfAbsent(v) { calcCommonScore(it) }
+    fun getRangeScore(v: Vec2Int, nextRoutePoint: Vec2Int?): PFScore {
+        val commonScore = commonCache.computeIfAbsent(v) { calcCommonScore(it, nextRoutePoint) }
 
-            val rangeScore = calcRangeScoreInternal(it)
-            commonScore.copy(commonScore.score + rangeScore.score, rangeScore.loosingFight)
-        }
+        val rangeScore = calcRangeScoreInternal(v)
+        return commonScore.copy(commonScore.score + rangeScore.score, rangeScore.loosingFight)
+    }
 
     fun getMeleeScore(v: Vec2Int): PFScore =
         meleeCache.computeIfAbsent(v) {
-            val commonScore = commonCache.computeIfAbsent(v) { calcCommonScore(it) }
+            val commonScore = commonCache.computeIfAbsent(v) { calcCommonScore(it, null) }
 
             val meleeCache = calcMeleeScoreInternal(it)
             commonScore.copy(commonScore.score + meleeCache.score, meleeCache.loosingFight)
         }
 
-    private fun calcCommonScore(v: Vec2Int): PFScore {
+    private fun calcCommonScore(v: Vec2Int, nextRoutePoint: Vec2Int?): PFScore {
         var current = 0.0
         // -- 0. Remove cell if is busy by building
         val unitInCell = CellIndex.getUnit(v)
@@ -89,12 +88,6 @@ object ArmyPF {
         if (unitInCell?.isBuilding() == true) {
             return PFScore(Double.MIN_VALUE, false)
         }
-
-        // -- 1. Repelling from resources
-        current += v.cellsWithinDistance(2).filter { CellIndex.getUnit(it)?.entityType == EntityType.RESOURCE }
-            .map { it.distance(v) }.minOrNull()?.let {
-                resourceRepellingImpulse.valueForDistance(it)
-            } ?: 0.0
 
         if (v.enemiesWithinDistance(10).filter { it.damage() > 1 }.any()) {
             // -- 2. gravity coefficient
@@ -106,9 +99,12 @@ object ArmyPF {
         }
 
         // -- 3. enemy attraction
-        val attractionPointScore = nearestEnemyAttractionImpulse.valueForDistance(
-            v.distance(enemies().minByOrNull { it.distance(v) }?.position ?: Vec2Int(30, 30))
-        )
+        val attractionPointScore = nextRoutePoint?.let { p ->
+            if (CellIndex.getUnit(v)?.entityType == EntityType.RESOURCE || CellIndex.getUnit(v) == null) {
+                1000 - p.distance(v).toInt() * 100
+            } else 0
+        } ?: 0
+
 
         current += attractionPointScore
         return PFScore(current)
