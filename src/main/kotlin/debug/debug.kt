@@ -28,7 +28,7 @@ fun drawWorkersPf(debugInterface: DebugInterface) {
 
 fun DebugInterface.drawArmyPF() {
     val gradient = ColorGradient(Color(1F, 0F, 0F, 0.3F), Color(0F, 1F, 0F, 0.3F))
-    val pf = Array(80) { x -> Array(80) { y -> ArmyPF.getMeleeScore(Vec2Int(x, y)) } }
+    val pf = Array(80) { x -> Array(80) { y -> ArmyPF.getRangeScore(Vec2Int(x, y)) } }
     val min = pf.flatMap { it.toList().map { it.score } }.filter { it != Double.MIN_VALUE }.minOrNull()!!
     val max = pf.flatMap { it.toList().map { it.score } }.filter { it != Double.MIN_VALUE }.maxOrNull()!!
 

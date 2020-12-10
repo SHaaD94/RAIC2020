@@ -31,7 +31,7 @@ object UnitProductionDecisionMaker {
         } else {
             when (entity.entityType) {
                 EntityType.RANGED_BASE -> true
-                EntityType.MELEE_BASE -> false//EntityType.MELEE_UNIT.cost() <= EntityType.RANGED_UNIT.cost() / 2
+                EntityType.MELEE_BASE -> false //EntityType.MELEE_UNIT.cost() <= EntityType.RANGED_UNIT.cost() / 2
                 EntityType.BUILDER_BASE ->
                     myWorkers().count() <
                             min(

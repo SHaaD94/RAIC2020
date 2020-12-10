@@ -86,7 +86,7 @@ object WorkersManager : ActionProvider {
                     val bestNearestResource = findClosestResource(
                         w.position,
                         10
-                    ) { !busyResources.contains(it) && CellIndex.getUnit(it) == null }
+                    ) { !busyResources.contains(it) }
 
                     if (bestNearestResource != null) {
                         busyResources.add(bestNearestResource.position)

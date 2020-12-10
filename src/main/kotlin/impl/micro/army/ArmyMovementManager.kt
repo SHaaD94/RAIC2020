@@ -19,15 +19,20 @@ object ArmyMovementManager : ActionProvider {
             earlyGame(resultActions, mainBase)
         } else {
             myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-                val cellsToCheck = if (u.enemiesWithinDistance(30).none()) {
-                    coarseCellsToCheck(u, 15)
-                } else if (u.enemiesWithinDistance(10).none()) {
-                    coarseCellsToCheck(u, 7)
-                } else {
-                    u.cellsWithinDistance(5)
+                val cellsToCheck = when {
+                    u.enemiesWithinDistance(30).none() -> coarseCellsToCheck(u, 15)
+                    u.enemiesWithinDistance(10).none() -> coarseCellsToCheck(u, 7)
+                    else -> u.cellsWithinDistance(5)
                 }
                 val cell = cellsToCheck
-                    .map { it to ArmyPF.getMeleeScore(it).score }
+                    .map {
+                        it to
+                                if (u.entityType == EntityType.RANGED_UNIT) {
+                                    ArmyPF.getRangeScore(it).score
+                                } else {
+                                    ArmyPF.getMeleeScore(it).score
+                                }
+                    }
                     .maxByOrNull { it.second }
                     ?.first ?: Vec2Int()
 
@@ -63,13 +68,13 @@ object ArmyMovementManager : ActionProvider {
         myArmy()
 //            .filter { !ArmyPF.getMeleeScore(it.position).loosingFight }
             .map { u ->
-            u to enemies()
-                .map { it to it.distance(u) }
-                .filter { (e, dist) -> dist <= u.attackRange() }
-                .filter { it.first.health > 0 }
-                .minByOrNull { (e, _) -> e.health }
-                ?.first
-        }
+                u to enemies()
+                    .map { it to it.distance(u) }
+                    .filter { (e, dist) -> dist <= u.attackRange() }
+                    .filter { it.first.health > 0 }
+                    .minByOrNull { (e, _) -> e.health }
+                    ?.first
+            }
             .filter { it.second != null }
             .forEach { (u, e) -> resultActions[u.id] = u.attackAction(e!!, autoAttack = null) }
     }

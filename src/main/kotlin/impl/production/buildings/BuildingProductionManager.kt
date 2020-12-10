@@ -54,7 +54,7 @@ object BuildingProductionManager : ActionProvider {
             totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(HOUSE) <= 3 -> {
                 requestBuilding(HOUSE)
             }
-            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(HOUSE) <= 5 -> {
+            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(HOUSE) <= 3 -> {
                 requestBuilding(HOUSE)
             }
         }
