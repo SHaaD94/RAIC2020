@@ -10,13 +10,16 @@ import kotlin.math.min
 object UnitProductionDecisionMaker {
     private const val middleGameWorkers = 40
     private const val lateGameWorkers = 60
+
     private const val defenseDistance = 60
 
     fun shouldProduceUnit(entity: Entity): Boolean {
         return if (currentTick() < 200 && myWorkers().count() <= middleGameWorkers) {
             val allies = Vec2Int(0, 0).alliesWithinDistance(defenseDistance)
+                .filter { !it.isBuilding() }
                 .filter { it.damage() > 1 }.map { it.health }.sum()
             val enemies = Vec2Int(0, 0).enemiesWithinDistance(defenseDistance)
+                .filter { !it.isBuilding() }
                 .filter { it.damage() > 1 }.map { it.health }.sum()
             val underAttackButWillManage = allies > (enemies * 1.1)
             when (entity.entityType) {

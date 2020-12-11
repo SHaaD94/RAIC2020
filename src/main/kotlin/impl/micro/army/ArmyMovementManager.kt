@@ -1,10 +1,11 @@
 package impl.micro.army
 
-import debug.drawArmyPF
-import debug.drawSquare
+import DebugInterface
+import debug.drawLine
 import debug.drawText
 import debug.globalDebugInterface
 import impl.*
+import impl.util.algo.CellIndex
 import impl.util.algo.distance
 import impl.util.algo.pathFinding.findRoute
 import impl.util.attackAction
@@ -24,31 +25,69 @@ object ArmyMovementManager : ActionProvider {
             // gather at one point and defend against early aggression
             earlyGame(resultActions, mainBase)
         } else {
-            myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-                val closestEnemy = enemies().minByOrNull { u.distance(it) }?.position ?: Vec2Int(40, 40)
-                val route = findRoute(u.position, closestEnemy, u)
-                val cell = u.validCellsAround()
-                    .map {
-                        it to
-                                if (u.entityType == EntityType.RANGED_UNIT) {
-                                    ArmyPF.getRangeScore(it, route.getOrNull(1)).score
-                                } else {
-                                    ArmyPF.getMeleeScore(it).score
-                                }
+            myArmy()
+                .sortedBy { it.distance(79, 79) }
+                .filter { !resultActions.containsKey(it.id) }
+                .mapNotNull { u ->
+                    fun DebugInterface.drawRoute(route: List<Vec2Int>) {
+                        route.windowed(2).forEach { (from, to) ->
+                            this.drawLine(from, to, Color(1.0F, 0F, 0F, 1F))
+                        }
                     }
-                    .onEach { (v, score) ->
-                        globalDebugInterface?.drawText(
-                            v,
-                            ((score * 10000).roundToInt() / 10000.0).toString()
-                        )
 
+                    fun findInterestPoint(): Vec2Int {
+                        if (u.cellsWithinDistance(7).any { cc ->
+                                ArmyPF.failedSimulationPoints.contains(cc)
+                            }) {
+                            return Vec2Int(0, 0)
+                        }
+                        if (u.enemiesWithinDistance(12).any()) {
+                            val cellForFire = u.cellsWithinDistance(7)
+                                .filter { CellIndex.getUnit(it)?.isBuilding() == false }
+                                .filter { CellIndex.getUnit(it)?.entityType != EntityType.RESOURCE }
+                                .filter { c ->
+                                    c.enemiesWithinDistance(5).any()
+                                }.minByOrNull { u.distance(it) }
+                            if (cellForFire != null) return cellForFire
+                        }
+                        return enemies().minByOrNull { u.distance(it) }?.position ?: Vec2Int(40, 40)
                     }
-                    .maxByOrNull { it.second }
-                    ?.first ?: Vec2Int()
 
-                u.id to u.moveAction(cell, true, true)
+                    val interestPoint = findInterestPoint()
+                    val route = findRoute(u.position, interestPoint, u)
 
-            }.forEach { resultActions[it.first] = it.second }
+                    globalDebugInterface?.drawRoute(route)
+                    val cell = u.cellsWithinDistance(1)
+                        .filter {
+                            if (CellIndex.getUnitForNextIndex(u.position) != u) {
+                                if (it == u.position) return@filter false
+                                val position = u.position.validCellsAround().map { it to CellIndex.getUnit(it) }
+                                    .filter { it.second != null }
+                                    .filter { it.second == CellIndex.getUnitForNextIndex(u.position) }
+                                    .first().second!!.position
+                                if (position == it) return@filter false
+                            }
+                            true
+                        }
+
+                        .map {
+                            it to
+                                    if (u.entityType == EntityType.RANGED_UNIT) {
+                                        ArmyPF.getRangeScore(it, route.getOrNull(2)).score
+                                    } else {
+                                        ArmyPF.getMeleeScore(it).score
+                                    }
+                        }
+                        .onEach { (v, score) ->
+                            globalDebugInterface?.drawText(v, ((score * 10000).roundToInt() / 10000.0).toString())
+                        }
+                        .maxByOrNull { it.second }
+                        ?.first ?: Vec2Int()
+
+                    CellIndex.setNextUnit(u.position, cell, u)
+                    u.id to u.moveAction(cell, true, true)
+
+                }.forEach { resultActions[it.first] = it.second }
         }
         return resultActions
     }

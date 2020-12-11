@@ -1,5 +1,6 @@
 package impl.util.algo.pathFinding
 
+import impl.myPlayerId
 import impl.util.algo.CellIndex
 import impl.util.algo.distance
 import model.Entity
@@ -14,6 +15,7 @@ fun findRoute(from: Vec2Int, to: Vec2Int, unit: Entity): List<Vec2Int> {
     val node2RouteNode = HashMap<Vec2Int, RouteNode>()
     val queue = PriorityQueue<RouteNode>()
     val start = RouteNode(from, null, from.distance(to))
+    val visited = mutableSetOf<Vec2Int>()
 
     node2RouteNode[from] = start
     queue.add(start)
@@ -21,25 +23,25 @@ fun findRoute(from: Vec2Int, to: Vec2Int, unit: Entity): List<Vec2Int> {
     while (!queue.isEmpty()) {
         val next = queue.poll()
 
-        val currentList = LinkedList<Vec2Int>()
-        var cur: RouteNode? = next
-        while (cur != null) {
-            currentList.addFirst(cur.current)
-            cur = cur.previous
-        }
+        visited.add(next.current)
 
-        if (next.current == to) return currentList
+        if (next.current == to) break
 
         next.current.validCellsAround()
             .filter {
                 if (it == from || it == to) return@filter true
                 val entityInCell = CellIndex.getUnit(it)
-                entityInCell == null || !entityInCell.isBuilding()
-                        || entityInCell.entityType != EntityType.BUILDER_UNIT || entityInCell.entityType == EntityType.RESOURCE
+                when {
+                    entityInCell == null -> true
+                    entityInCell.isBuilding() -> false
+                    entityInCell.entityType == EntityType.RESOURCE -> true
+                    CellIndex.getUnitForNextIndex(it) == null -> true
+                    else -> false
+                }
             }
             .asSequence()
             // not going for same node twice
-            .filter { !currentList.contains(it) }
+            .filter { !visited.contains(it) }
             .forEach { neighbourVertex ->
                 val nextNode = node2RouteNode.computeIfAbsent(neighbourVertex) { x -> RouteNode(x) }
 
@@ -61,11 +63,13 @@ fun findRoute(from: Vec2Int, to: Vec2Int, unit: Entity): List<Vec2Int> {
             }
     }
 
-//    debug.drawPoint(start.current.coord, 0.3f, ColorFloat(r = 255f))
-//    debug.drawPoint(to.coord, 0.3f, ColorFloat(g = 255f))
-
-    println("No route found from ${start.current} to ${to}")
-    return emptyList()
+    val res = LinkedList<Vec2Int>()
+    var cur: RouteNode? = node2RouteNode[to] ?: return emptyList()
+    while (cur != null) {
+        res.addFirst(cur.current)
+        cur = cur.previous
+    }
+    return res
 }
 
 data class RouteNode(

@@ -55,16 +55,6 @@ class MyStrategy {
             }
         }
 
-        debugInterface?.let { d ->
-            myArmy().forEach {u->
-                val e = enemies().minByOrNull { it.distance(u) } ?: return@let
-                val route = findRoute(u.position, e.position, u)
-                route.windowed(2).forEach { (from, to) ->
-                    d.drawLine(from, to, Color(1.0F, 0F, 0F, 1F))
-                }
-            }
-        }
-
 //        debugInterface?.drawClusters()
 //        if (currentTick() > 200) debugInterface?.drawArmyPF()
 
