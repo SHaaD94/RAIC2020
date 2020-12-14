@@ -63,6 +63,7 @@ object WorkersManager : ActionProvider {
         val workersAlreadyRepairingBuildings = myBuildings().filter { it.health != it.maxHP() }
             .flatMap { b ->
                 b.validCellsAround().mapNotNull { CellIndex.getUnit(it) }
+                    .filter { it.entityType == EntityType.BUILDER_UNIT }
                     .filter { !busyWorkers.contains(it.id) }
                     .onEach { buildingRequiringRepair[b] = buildingRequiringRepair[b]!! - 1 }
                     .onEach { busyWorkers.add(it.id) }
