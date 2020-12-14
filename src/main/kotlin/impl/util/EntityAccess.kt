@@ -1,6 +1,7 @@
 package impl
 
 import impl.global.State.playerView
+import impl.micro.scouts.ScoutsMovementManager
 import impl.production.buildings.BuildingProductionManager
 import impl.util.algo.CellIndex
 import model.Entity
@@ -32,6 +33,7 @@ fun myUnits(type: EntityType? = null) = myEntities(type).filter { unitTypes.cont
 fun myBuildings(type: EntityType? = null) = myEntities(type).filter { buildingTypes.contains(it.entityType) }
 
 fun myWorkers() = myUnits(BUILDER_UNIT)
+    .filter { !ScoutsMovementManager.isScout(it) }
 
 fun resources(): List<Entity> = playerView.entities.filter { it.entityType == RESOURCE }
 

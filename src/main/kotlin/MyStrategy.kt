@@ -1,6 +1,4 @@
 import debug.*
-import impl.currentTick
-import impl.enemies
 import impl.global.ClusterManager
 import impl.global.State
 import impl.global.Vision
@@ -8,16 +6,14 @@ import impl.global.initEntityStats
 import impl.micro.TurretsActionProvider
 import impl.micro.army.ArmyMovementManager
 import impl.micro.army.ArmyPF
+import impl.micro.scouts.ScoutsMovementManager
+import impl.micro.scouts.ScoutsPF
 import impl.micro.workers.WorkersManager
 import impl.micro.workers.WorkersPF
-import impl.myArmy
 import impl.production.buildings.BuildingProductionManager
 import impl.production.units.UnitProductionManager
 import impl.util.algo.CellIndex
-import impl.util.algo.distance
-import impl.util.algo.pathFinding.findRoute
 import model.Action
-import model.Color
 import model.EntityAction
 import model.PlayerView
 
@@ -26,6 +22,7 @@ class MyStrategy {
     val actionProviders = listOf(
         TurretsActionProvider,
         BuildingProductionManager,
+        ScoutsMovementManager,
         WorkersManager,
         UnitProductionManager,
         ArmyMovementManager
@@ -34,12 +31,12 @@ class MyStrategy {
     fun getAction(playerView: PlayerView, debugInterface: DebugInterface?): Action {
         val start = System.currentTimeMillis()
         globalDebugInterface = debugInterface
-//        debugInterface?.clear()
         initEntityStats(playerView)
         Vision.update(playerView)
         State.update(playerView)
         CellIndex.update(playerView)
         WorkersPF.update(playerView)
+        ScoutsPF.update(playerView)
         ClusterManager.update(playerView)
         ArmyPF.clearCachesAndUpdate()
 

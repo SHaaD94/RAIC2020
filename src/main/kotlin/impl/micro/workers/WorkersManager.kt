@@ -90,7 +90,10 @@ object WorkersManager : ActionProvider {
 //            } else {
             val closestResourceWithoutEnemies =
                 resources().filter { WorkersPF.getScore(it.position) >= 0 }
-                    .minByOrNull { w.distance(it) } ?: return@mapNotNull null
+                    .minByOrNull { w.distance(it) }
+                    ?: return@mapNotNull w.id to w.moveAction(
+                        Vec2Int(40, 40), true, true
+                    )
 
             if (closestResourceWithoutEnemies.distance(w) < 10) {
                 //TODO THIS MIGHT BE REDUCED LATER

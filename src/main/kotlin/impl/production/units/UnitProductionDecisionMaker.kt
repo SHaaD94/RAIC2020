@@ -1,6 +1,7 @@
 package impl.production.units
 
 import impl.*
+import impl.micro.scouts.ScoutsMovementManager
 import model.Entity
 import model.EntityType
 import model.Vec2Int
@@ -14,7 +15,8 @@ object UnitProductionDecisionMaker {
     private const val defenseDistance = 60
 
     fun shouldProduceUnit(entity: Entity): Boolean {
-        return if (currentTick() < 200 && myWorkers().count() <= middleGameWorkers) {
+        return if (currentTick() < 200 && myWorkers().filter { !ScoutsMovementManager.isScout(it) }
+                .count() <= middleGameWorkers) {
             val allies = Vec2Int(0, 0).alliesWithinDistance(defenseDistance)
                 .filter { !it.isBuilding() }
                 .filter { it.damage() > 1 }.map { it.health }.sum()
