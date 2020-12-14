@@ -6,8 +6,6 @@ name: Previous version test
 on:
   push:
     branches: '*'
-  pull_request:
-    branches: '*'
 
 jobs:
   build:
@@ -30,4 +28,4 @@ jobs:
       - name: Start test
         run: |
           cd runner
-          python3 game_runner.py 1x3_v 10 75
+          python3 game_runner.py 1x3_v 10 50
