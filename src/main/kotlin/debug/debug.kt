@@ -2,6 +2,7 @@ package debug
 
 import DebugInterface
 import impl.global.ClusterManager
+import impl.global.Vision
 import impl.micro.army.ArmyPF
 import impl.micro.workers.WorkersPF
 import impl.util.algo.distance
@@ -123,6 +124,16 @@ fun DebugInterface.drawClusters() {
                 it.position.x, it.position.y, it.size(),
                 randomColors[i]
             )
+        }
+    }
+}
+
+fun DebugInterface.drawVision() {
+    (0 until 80).forEach { x ->
+        (0 until 80).forEach { y ->
+            if (!Vision.isVisible(x, y)) {
+                this.drawSquare(x, y, 1, Color(0F, 0F, 0F, 0.8F))
+            }
         }
     }
 }

@@ -1,10 +1,9 @@
-import debug.drawArmyPF
-import debug.drawLine
-import debug.globalDebugInterface
+import debug.*
 import impl.currentTick
 import impl.enemies
 import impl.global.ClusterManager
 import impl.global.State
+import impl.global.Vision
 import impl.global.initEntityStats
 import impl.micro.TurretsActionProvider
 import impl.micro.army.ArmyMovementManager
@@ -37,6 +36,7 @@ class MyStrategy {
         globalDebugInterface = debugInterface
 //        debugInterface?.clear()
         initEntityStats(playerView)
+        Vision.update(playerView)
         State.update(playerView)
         CellIndex.update(playerView)
         WorkersPF.update(playerView)

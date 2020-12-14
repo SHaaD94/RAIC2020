@@ -77,6 +77,7 @@ data class Entity(
 
     fun maxHP() = this.entityType.maxHP()
     fun attackRange() = this.entityType.attackRange()
+    fun visionRange() = this.entityType.visionRange()
     fun damage() = this.entityType.damage()
 
     fun isBuilding() = buildingTypes.contains(this.entityType)

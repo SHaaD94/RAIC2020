@@ -21,6 +21,7 @@ fun EntityType.maxHP() = entityStats[this]!!.maxHealth
 fun EntityType.cost() = State.actualEntityCost[this] ?: entityStats[this]!!.cost
 fun EntityType.attackRange() = entityStats[this]!!.attack?.attackRange ?: 0
 fun EntityType.damage() = entityStats[this]!!.attack?.damage ?: 0
+fun EntityType.visionRange() = entityStats[this]!!.sightRange
 fun EntityType.populationProvide() = entityStats[this]!!.populationProvide
 fun EntityType.populationUse() = entityStats[this]!!.populationUse
 fun EntityType.productionEntity() = entityStats
