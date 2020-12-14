@@ -14,90 +14,108 @@ data class Impulse(
     fun valueForDistance(dist: Double) = if (dist == 0.0) basicScore else fadeFunction(dist, basicScore)
 }
 
-data class PFScore(val score: Double)
+data class PFScore(val score: Double, val loosingFight: Boolean)
 object ArmyPF {
+    private val allyImpulse = Impulse(30.0) { distance, score ->
+        max(score - distance, 0.0)
+    }
+    private val nearestEnemyAttractionImpulse = Impulse(10000.0) { dist, score ->
+        score - dist * 100
+    }
+    private val resourceRepellingImpulse = Impulse(-100.0) { dist, score ->
+        when (dist) {
+            0.0 -> score
+            1.0 -> score * 0.67
+            2.0 -> score * 0.34
+            else -> 0.0
+        }
+    }
+
     private val simulationLooseImpulse = Impulse(-2000.0) { dist, score ->
         score + dist * 50
     }
-    var failedSimulationPoints = listOf<Vec2Int>()
+
+    private val enemyDangerImpulse = Impulse(-100.0) { dist, score ->
+        max(score + dist * dist, 0.0)
+    }
+
+    private val meleeCache = HashMap<Vec2Int, PFScore>()
+
+    private var failedSimulationPoints = listOf<Vec2Int>()
+
 
     fun clearCachesAndUpdate() {
-        failedSimulationPoints = listOf()
-        myArmy().flatMap { u ->
-            val enemiesInThePoint = u.enemiesWithinDistance(10).filter { it.damage() > 1 }
+        meleeCache.clear()
+        failedSimulationPoints =
+            myArmy().mapNotNull { u ->
+                val enemiesInThePoint = u.enemiesWithinDistance(10).filter { it.damage() > 1 }
 
-            if (enemiesInThePoint.none()) return@flatMap sequenceOf<Vec2Int>()
+                if (enemiesInThePoint.none()) return@mapNotNull null
 
-            val closestEnemy = enemiesInThePoint.map { it to it.distance(u) }.minByOrNull { it.second }!!.first
-            val enemies =
-                closestEnemy.enemiesWithinDistance(5).filter { it.damage() > 1 }.filter { it.active }.distinct()
-                    .toList()
-            val allies = u.alliesWithinDistance(5).filter { it.damage() > 1 }.filter { it.active }.distinct().toList()
+                val closestEnemy = enemiesInThePoint.map { it to it.distance(u) }.minByOrNull { it.second }!!.first
+                val enemies = closestEnemy.enemiesWithinDistance(7).filter { it.damage() > 1 }.toList()
+                val allies = u.alliesWithinDistance(7).filter { it.damage() > 1 }.toList()
 
-            if (FightSimulation.predictResultFast(
-                    allies,
-                    enemies
-                ) == Loose
-            ) closestEnemy.cellsCovered() else sequenceOf()
-        }.toList()
+                if (
+                    FightSimulation.predictResultFast(allies, enemies) == Loose
+                )
+//                        (u.position + closestEnemy.position) / 2 else null
+                    closestEnemy.position else null
+            }.toList()
     }
 
-    fun getRangeScore(v: Vec2Int, nextRoutePoint: Vec2Int?): PFScore {
-        val commonScore = calcCommonScore(v, nextRoutePoint)
+    fun getMeleeScore(v: Vec2Int): PFScore =
+        meleeCache.computeIfAbsent(v) { calcScoreInternal(it) }
 
-        val rangeScore = calcRangeScoreInternal(v)
-        return PFScore(commonScore.score + rangeScore.score)
-    }
-
-    fun getMeleeScore(v: Vec2Int): PFScore {
-        val commonScore = calcCommonScore(v, null)
-
-        val meleeCache = calcMeleeScoreInternal(v)
-        return PFScore(commonScore.score + meleeCache.score)
-    }
-
-
-    private fun calcCommonScore(v: Vec2Int, nextRoutePoint: Vec2Int?): PFScore {
+    private fun calcScoreInternal(v: Vec2Int): PFScore {
         var current = 0.0
+        var loosingFight = false
+        // ------------- COMMON
+
         // -- 0. Remove cell if is busy by building
         val unitInCell = CellIndex.getUnit(v)
 
         if (unitInCell?.isBuilding() == true) {
-            return PFScore(Double.MIN_VALUE)
+            return PFScore(Double.MIN_VALUE, false)
+        }
+
+        // -- 1. Repelling from resources
+        current += v.cellsWithinDistance(2).filter { CellIndex.getUnit(it)?.entityType == EntityType.RESOURCE }
+            .map { it.distance(v) }.minOrNull()?.let {
+                resourceRepellingImpulse.valueForDistance(it)
+            } ?: 0.0
+
+        if (v.enemiesWithinDistance(10).filter { it.damage() > 1 }.any()) {
+            // -- 2. gravity coefficient
+            v.alliesWithinDistance(10)
+                .filter { it.entityType == EntityType.RANGED_UNIT || it.entityType == EntityType.MELEE_UNIT }.forEach {
+                    val score = allyImpulse.valueForDistance(it.distance(v))
+                    current += score
+                }
         }
 
         // -- 3. enemy attraction
-        val attractionPointScore = nextRoutePoint?.let { p ->
-//            if (CellIndex.getUnit(v)?.entityType == EntityType.RESOURCE || CellIndex.getUnit(v) == null) {
-            1000 - p.distance(v).toInt() * 100
-//            } else 0
-        } ?: 0
-
+        val attractionPointScore = nearestEnemyAttractionImpulse.valueForDistance(
+            v.distance(enemies().minByOrNull { it.distance(v) }?.position ?: Vec2Int(30, 30))
+        )
 
         current += attractionPointScore
-        return PFScore(current)
-    }
 
-    private fun calcRangeScoreInternal(v: Vec2Int): PFScore {
-        var current = 0.0
+        // -- 4. danger score
+//        v.enemiesWithinDistance(15).forEach {
+//            val danderScore = enemyDangerImpulse.valueForDistance(it.distance(v))
+//            current += danderScore
+//        }
 
-        // -- 1. simulation score
+        // -- 5. simulation score
         failedSimulationPoints.map { it to it.distance(v) }.filter { it.second < 7 }.minByOrNull { it.second }
             ?.let { (failSimPoint, _) ->
+                loosingFight = true
                 current +=
                     simulationLooseImpulse.valueForDistance(failSimPoint.distance(v))
             }
 
-        return PFScore(current)
-    }
-
-    private fun calcMeleeScoreInternal(v: Vec2Int): PFScore {
-        var current = 0.0
-
-        // -- 1. simulation score
-
-
-        return PFScore(current)
+        return PFScore(current, loosingFight)
     }
 
 //    fun getRange(v: Vec2Int) = range[v.x][v.y]
