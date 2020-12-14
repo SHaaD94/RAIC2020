@@ -21,14 +21,11 @@ object UnitProductionDecisionMaker {
             val enemies = Vec2Int(0, 0).enemiesWithinDistance(defenseDistance)
                 .filter { !it.isBuilding() }
                 .filter { it.damage() > 1 }.map { it.health }.sum()
-            val underAttackButWillManage = allies > (enemies * 1.1)
+            val underAttackButWillManage = allies >= (enemies * 1.1)
             when (entity.entityType) {
                 EntityType.RANGED_BASE -> !underAttackButWillManage
                 EntityType.MELEE_BASE -> !underAttackButWillManage
-                EntityType.BUILDER_BASE -> underAttackButWillManage && myWorkers().count() < min(
-                    resources().count(),
-                    middleGameWorkers
-                )
+                EntityType.BUILDER_BASE -> underAttackButWillManage
                 else -> true
             }
         } else {
