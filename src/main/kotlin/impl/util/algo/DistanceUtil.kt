@@ -15,6 +15,9 @@ fun Vec2Float.distance(v: Vec2Float): Double =
 fun Vec2Int.distance(v: Vec2Int): Double =
     manhattanDistance(this.x, v.x, this.y, v.y).toDouble()
 
+fun Vec2Int.distance(e: Entity): Double =
+    manhattanDistance(this.x, e.position.x, this.y, e.position.y).toDouble()
+
 fun Vec2Int.distance(x: Int, y: Int): Double =
     manhattanDistance(this.x, x, this.y, y).toDouble()
 

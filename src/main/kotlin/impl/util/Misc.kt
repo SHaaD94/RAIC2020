@@ -1,6 +1,5 @@
 package impl.util
 
-import impl.global.State
 import model.Entity
 import model.EntityType
 import model.Vec2Int

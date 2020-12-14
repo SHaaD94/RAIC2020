@@ -69,7 +69,6 @@ object ArmyMovementManager : ActionProvider {
                             }
                             true
                         }
-
                         .map {
                             it to
                                     if (u.entityType == EntityType.RANGED_UNIT) {

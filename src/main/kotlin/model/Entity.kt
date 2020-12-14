@@ -5,6 +5,7 @@ import impl.global.entityStats
 import impl.myPlayerId
 import impl.unitTypes
 import impl.util.algo.distance
+import impl.util.cellsAround
 import util.StreamUtil
 import java.util.*
 
@@ -81,7 +82,7 @@ data class Entity(
     fun isBuilding() = buildingTypes.contains(this.entityType)
     fun isUnit() = unitTypes.contains(this.entityType)
 
-    fun validCellsAround() = this.position.validCellsAround()
+    fun validCellsAround() = cellsAround(this).asSequence().filter { it.isValid() }
 
     fun cellsWithinDistance(distance: Int): Sequence<Vec2Int> = this.position.cellsWithinDistance(distance)
 
