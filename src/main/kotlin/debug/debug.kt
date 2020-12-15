@@ -1,10 +1,12 @@
 package debug
 
 import DebugInterface
+import impl.enemies
 import impl.global.ClusterManager
 import impl.global.Vision
 import impl.micro.army.ArmyPF
 import impl.micro.workers.WorkersPF
+import impl.resources
 import impl.util.algo.distance
 import model.*
 import kotlin.math.roundToInt
@@ -141,5 +143,14 @@ fun DebugInterface.drawVision() {
 fun DebugInterface.drawRoute(route: List<Vec2Int>) {
     route.windowed(2).forEach { (from, to) ->
         this.drawLine(from, to, Color(1.0F, 0F, 0F, 1F))
+    }
+}
+
+fun DebugInterface.drawEnemyAndResourceVision() {
+    enemies().forEach { e ->
+        this.drawSquare(e.position, e.size(), Color(1F, 0F, 0F, 0.9F))
+    }
+    resources().forEach { e ->
+        this.drawSquare(e.position, e.size(), Color(0F, 0.5F, 1F, 0.9F))
     }
 }

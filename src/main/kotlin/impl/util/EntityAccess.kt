@@ -1,5 +1,6 @@
 package impl
 
+import impl.global.OnceSeenEntities
 import impl.global.State.playerView
 import impl.micro.scouts.ScoutsMovementManager
 import impl.production.buildings.BuildingProductionManager
@@ -18,11 +19,11 @@ fun currentTick(): Int = playerView.currentTick
 
 //---------------------------------------
 
-fun entities(): Sequence<Entity> = playerView.entities.asSequence()
+fun entities(): Sequence<Entity> = playerView.entities.asSequence() + OnceSeenEntities.maybeEntities.asSequence()
 
 fun entities(type: EntityType): Sequence<Entity> = entities().filter { it.entityType == type }
 
-fun units(): Sequence<Entity> = playerView.entities.asSequence().filter { it.entityType != RESOURCE }
+fun units(): Sequence<Entity> = entities().filter { it.entityType != RESOURCE }
 
 fun myEntities(type: EntityType? = null): Sequence<Entity> = units()
     .filter { it.playerId == myPlayerId() }
@@ -35,7 +36,7 @@ fun myBuildings(type: EntityType? = null) = myEntities(type).filter { buildingTy
 fun myWorkers() = myUnits(BUILDER_UNIT)
     .filter { !ScoutsMovementManager.isScout(it) }
 
-fun resources(): List<Entity> = playerView.entities.filter { it.entityType == RESOURCE }
+fun resources(): Sequence<Entity> = entities().filter { it.entityType == RESOURCE }
 
 fun myArmy() = myUnits().filter { it.entityType == RANGED_UNIT || it.entityType == MELEE_UNIT }
 

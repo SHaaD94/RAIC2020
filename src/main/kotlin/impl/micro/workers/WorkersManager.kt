@@ -34,7 +34,7 @@ object WorkersManager : ActionProvider {
         resultActions.putAll(repairBuildings(freeWorkers()))
 
         resultActions.putAll(
-            if (resources().isNotEmpty()) assignWorkersResources(freeWorkers()) else runTo00(
+            if (resources().any()) assignWorkersResources(freeWorkers()) else runTo00(
                 freeWorkers()
             )
         )
@@ -77,7 +77,7 @@ object WorkersManager : ActionProvider {
                     .sortedBy { it.distance(b) }
                     .take(workersToGet)
                     .onEach { busyWorkers.add(it.id) }
-                    .map { it.id to repairBuilding(it, b) }
+                    .map { it.id to moveToBuildingRepairPosition(it, b) }
             }.toMap() + workersAlreadyRepairingBuildings
     }
 
@@ -122,17 +122,14 @@ object WorkersManager : ActionProvider {
             .map { w -> w.id to w.moveAction(Vec2Int(0, 0), findClosestPosition = true, breakThrough = true) }
             .toMap()
 
-    private fun repairBuilding(worker: Entity, target: Entity): EntityAction {
+    private fun moveToBuildingRepairPosition(worker: Entity, target: Entity): EntityAction {
         val borderCells = cellsAround(target)
         // if builder is on one of them repair
-        return if (borderCells.contains(worker.position)) EntityAction(
-            repairAction = RepairAction(target.id)
-            // otherwise go to the nearest one
-        ) else worker.moveAction(
+        return worker.moveAction(
             borderCells.filter { !cellOccupied(it, worker) }.minByOrNull { it.distance(worker.position) }
             //FIXME HACK WITH DEFAULT VALUE
                 ?: target.position,
-            true,
+            false,
             true
         )
     }

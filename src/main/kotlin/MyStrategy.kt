@@ -1,9 +1,6 @@
 import debug.*
 import impl.enemies
-import impl.global.ClusterManager
-import impl.global.State
-import impl.global.Vision
-import impl.global.initEntityStats
+import impl.global.*
 import impl.micro.TurretsActionProvider
 import impl.micro.army.ArmyMovementManager
 import impl.micro.army.ArmyPF
@@ -38,6 +35,7 @@ class MyStrategy {
         Vision.update(playerView)
         State.update(playerView)
         CellIndex.update(playerView)
+        OnceSeenEntities.update(playerView)
         WorkersPF.update(playerView)
         ScoutsPF.update(playerView)
         ClusterManager.update(playerView)
@@ -52,15 +50,6 @@ class MyStrategy {
                 } else {
                     resActions[u] = action
                 }
-            }
-        }
-
-        debugInterface?.let { d->
-            enemies().forEach { e->
-                d.drawSquare(e.position,e.size(), Color(1F,0F,0F,0.9F))
-            }
-            resources().forEach { e->
-                d.drawSquare(e.position,e.size(), Color(0F,0.5F,1F,0.9F))
             }
         }
 
