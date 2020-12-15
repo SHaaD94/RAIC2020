@@ -17,6 +17,7 @@ import model.Entity
 import model.EntityAction
 import model.Vec2Int
 import java.util.*
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 object ScoutsMovementManager : ActionProvider {
@@ -44,23 +45,25 @@ object ScoutsMovementManager : ActionProvider {
 
 //        updatePF(myCurrentScouts)
 
-        return myCurrentScouts.mapNotNull { s ->
+        return myCurrentScouts.map { s ->
             s.id to s.moveAction(bestScoutPoint(s), true, true)
         }.toMap()
     }
 
     private fun bestScoutPoint(e: Entity): Vec2Int {
+        val cornersSequence = sequenceOf(
+            Vec2Int(0, 80),
+            Vec2Int(80, 80),
+            Vec2Int(80, 0)
+        )
+
         return e.cellsWithinDistance(e.visionRange())
             .filter { WorkersPF.getScore(it) >= 0 }
             .map { v ->
                 v to v.cellsWithinDistance(e.visionRange()).filter { !isVisible(it) }
                     .map { currentTick() - Vision.lastVisible(it) }
-                    .sum()
-            }.maxByOrNull { it.second }?.first ?: sequenceOf(
-            Vec2Int(0, 80),
-            Vec2Int(80, 80),
-            Vec2Int(80, 0)
-        ).minByOrNull { it.distance(e) }!!
+                    .sum() + max(0, 50 - cornersSequence.minByOrNull { v.distance(it).toInt() }!!.distance(v).toInt())
+            }.maxByOrNull { it.second }?.first ?: cornersSequence.minByOrNull { it.distance(e) }!!
     }
 
 //    private fun updatePF(myCurrentScouts: MutableList<Entity>) {

@@ -1,6 +1,5 @@
 package impl.global
 
-import impl.entities
 import impl.global.RoundInfo.currentRound
 import impl.global.Vision.isVisible
 import impl.myPlayerId
