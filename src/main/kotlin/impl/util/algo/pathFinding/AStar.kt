@@ -35,8 +35,8 @@ fun findRoute(from: Vec2Int, to: Vec2Int, unit: Entity): List<Vec2Int> {
                     entityInCell == null -> true
                     entityInCell.isBuilding() -> false
                     entityInCell.entityType == EntityType.RESOURCE -> true
-                    CellIndex.getUnitForNextIndex(it) == null -> true
-                    else -> false
+//                    CellIndex.getUnitForNextIndex(it) == null -> true
+                    else -> true
                 }
             }
             .asSequence()

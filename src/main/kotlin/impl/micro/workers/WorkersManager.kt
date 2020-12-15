@@ -73,7 +73,7 @@ object WorkersManager : ActionProvider {
         return buildingRequiringRepair.entries.sortedBy { it.key.id }.filter { it.value > 0 }
             .flatMap { (b, workersToGet) ->
                 freeWorkers.filter { !busyWorkers.contains(it.id) }
-                    .filter { it.distance(b) < 20 }
+                    .filter { it.distance(b) < 15 }
                     .sortedBy { it.distance(b) }
                     .take(workersToGet)
                     .onEach { busyWorkers.add(it.id) }
@@ -85,35 +85,35 @@ object WorkersManager : ActionProvider {
         val busyResources = HashSet<Vec2Int>()
 
         return freeWorkers.mapNotNull { w ->
-//            if (WorkersPF.getScore(w.position) < 0) {
-//                w.id to w.moveAction(Vec2Int(), true, true)
-//            } else {
-            val closestResourceWithoutEnemies =
-                resources().filter { WorkersPF.getScore(it.position) >= 0 }
-                    .minByOrNull { w.distance(it) }
-                    ?: return@mapNotNull w.id to w.moveAction(
-                        Vec2Int(40, 40), true, true
+            if (WorkersPF.getScore(w.position) < 0) {
+                w.id to w.moveAction(Vec2Int(), true, true)
+            } else {
+                val closestResourceWithoutEnemies =
+                    resources().filter { WorkersPF.getScore(it.position) >= 0 }
+                        .minByOrNull { w.distance(it) }
+                        ?: return@mapNotNull w.id to w.moveAction(
+                            Vec2Int(40, 40), true, true
+                        )
+
+                if (closestResourceWithoutEnemies.distance(w) < 10) {
+                    //TODO THIS MIGHT BE REDUCED LATER
+                    val bestNearestResource = findClosestResource(w.position, 10) { !busyResources.contains(it) }
+
+                    if (bestNearestResource != null) {
+                        busyResources.add(bestNearestResource.position)
+                        return@mapNotNull w.id to w.moveAction(bestNearestResource.position, true, true)
+                    }
+                }
+
+                w.id to if (closestResourceWithoutEnemies.distance(w) > 15) {
+                    w.moveAction(closestResourceWithoutEnemies.position, true, true)
+                } else {
+                    w.attackAction(
+                        closestResourceWithoutEnemies,
+                        AutoAttack(State.maxPathfindNodes, EntityType.values())
                     )
-
-            if (closestResourceWithoutEnemies.distance(w) < 10) {
-                //TODO THIS MIGHT BE REDUCED LATER
-                val bestNearestResource = findClosestResource(w.position, 10) { !busyResources.contains(it) }
-
-                if (bestNearestResource != null) {
-                    busyResources.add(bestNearestResource.position)
-                    return@mapNotNull w.id to w.moveAction(bestNearestResource.position, true, true)
                 }
             }
-
-            w.id to if (closestResourceWithoutEnemies.distance(w) > 15) {
-                w.moveAction(closestResourceWithoutEnemies.position, true, true)
-            } else {
-                w.attackAction(
-                    closestResourceWithoutEnemies,
-                    AutoAttack(State.maxPathfindNodes, EntityType.values())
-                )
-            }
-//            }
         }.toMap()
     }
 

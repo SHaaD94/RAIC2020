@@ -1,4 +1,5 @@
 import debug.*
+import impl.enemies
 import impl.global.ClusterManager
 import impl.global.State
 import impl.global.Vision
@@ -12,8 +13,10 @@ import impl.micro.workers.WorkersManager
 import impl.micro.workers.WorkersPF
 import impl.production.buildings.BuildingProductionManager
 import impl.production.units.UnitProductionManager
+import impl.resources
 import impl.util.algo.CellIndex
 import model.Action
+import model.Color
 import model.EntityAction
 import model.PlayerView
 
@@ -52,8 +55,14 @@ class MyStrategy {
             }
         }
 
-//        debugInterface?.drawClusters()
-//        if (currentTick() > 200) debugInterface?.drawArmyPF()
+        debugInterface?.let { d->
+            enemies().forEach { e->
+                d.drawSquare(e.position,e.size(), Color(1F,0F,0F,0.9F))
+            }
+            resources().forEach { e->
+                d.drawSquare(e.position,e.size(), Color(0F,0.5F,1F,0.9F))
+            }
+        }
 
         timeTotal += System.currentTimeMillis() - start
         debugInterface?.let { println("Spent $timeTotal") }

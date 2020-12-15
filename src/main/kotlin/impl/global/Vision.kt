@@ -19,4 +19,7 @@ object Vision {
 
     fun isVisible(v: Vec2Int) = isVisible(v.x, v.y)
     fun isVisible(x: Int, y: Int) = visionMap.get(x * 80 + y)
+
+    fun lastVisible(v: Vec2Int) = lastVisible(v.x, v.y)
+    fun lastVisible(x: Int, y: Int) = lastVisible[x][y]
 }
