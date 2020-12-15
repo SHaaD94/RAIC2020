@@ -16,14 +16,11 @@ import impl.util.moveAction
 import model.Entity
 import model.EntityAction
 import model.Vec2Int
-import java.util.*
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 object ScoutsMovementManager : ActionProvider {
     private val currentScouts = mutableSetOf<Int>()
-
-//    private val scoutsPF = Array(80) { Array(80) { -1 } }
 
     override fun provideActions(): Map<Int, EntityAction> {
         if (currentRound() == Round1) return mapOf()
@@ -60,17 +57,12 @@ object ScoutsMovementManager : ActionProvider {
         return e.cellsWithinDistance(e.visionRange())
             .filter { WorkersPF.getScore(it) >= 0 }
             .map { v ->
-                v to v.cellsWithinDistance(e.visionRange()).filter { !isVisible(it) }
+                v to v.cellsWithinDistance(e.visionRange())
+                    .filter { !isVisible(it) }
                     .map { currentTick() - Vision.lastVisible(it) }
                     .sum() + max(0, 50 - cornersSequence.minByOrNull { v.distance(it).toInt() }!!.distance(v).toInt())
             }.maxByOrNull { it.second }?.first ?: cornersSequence.minByOrNull { it.distance(e) }!!
     }
-
-//    private fun updatePF(myCurrentScouts: MutableList<Entity>) {
-//        for (x in 0 until playerView.mapSize) {
-//            Arrays.setAll(WorkersPF.field[x]) { 0 }
-//        }
-//    }
 
     fun isScout(entity: Entity) = currentScouts.contains(entity.id)
 
