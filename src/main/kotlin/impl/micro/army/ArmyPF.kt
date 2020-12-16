@@ -85,14 +85,12 @@ object ArmyPF {
                 resourceRepellingImpulse.valueForDistance(it)
             } ?: 0.0
 
-        if (v.enemiesWithinDistance(10).filter { it.damage() > 1 }.any()) {
-            // -- 2. gravity coefficient
-            v.alliesWithinDistance(10)
-                .filter { it.entityType == EntityType.RANGED_UNIT || it.entityType == EntityType.MELEE_UNIT }.forEach {
-                    val score = allyImpulse.valueForDistance(it.distance(v))
-                    current += score
-                }
-        }
+        // -- 2. gravity coefficient
+        v.alliesWithinDistance(10)
+            .filter { it.entityType == EntityType.RANGED_UNIT || it.entityType == EntityType.MELEE_UNIT }.forEach {
+                val score = allyImpulse.valueForDistance(it.distance(v))
+                current += score
+            }
 
         // -- 3. enemy attraction
         val attractionPointScore = nearestEnemyAttractionImpulse.valueForDistance(

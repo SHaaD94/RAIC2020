@@ -1,7 +1,10 @@
 package impl.micro.army
 
+import debug.drawRoute
+import debug.globalDebugInterface
 import impl.*
 import impl.util.algo.distance
+import impl.util.algo.pathFinding.findRoute
 import impl.util.attackAction
 import impl.util.moveAction
 import model.*
@@ -18,21 +21,22 @@ object ArmyMovementManager : ActionProvider {
             // gather at one point and defend against early aggression
             earlyGame(resultActions, mainBase)
         } else {
-            myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-                val cellsToCheck = if (u.enemiesWithinDistance(30).none()) {
-                    coarseCellsToCheck(u, 15)
-                } else if (u.enemiesWithinDistance(10).none()) {
-                    coarseCellsToCheck(u, 7)
+            myArmy().filter { !resultActions.containsKey(it.id) }.map { u ->
+                if (u.enemiesWithinDistance(10).none()) {
+                    val attractionPoint = enemies().minByOrNull { it.distance(u) }?.position ?: Vec2Int(40, 40)
+
+//                    val route = findRoute(u.position, attractionPoint, u)
+//                    globalDebugInterface?.drawRoute(route)
+//                    val point2Move = route.getOrElse(1) { Vec2Int(40, 40) }
+//                    u.id to u.moveAction(point2Move, false, true)
+                    u.id to u.moveAction(attractionPoint, false, true)
                 } else {
-                    u.cellsWithinDistance(5)
+                    val cell = u.cellsWithinDistance(5)
+                        .map { it to ArmyPF.getMeleeScore(it).score }
+                        .maxByOrNull { it.second }
+                        ?.first ?: Vec2Int()
+                    u.id to u.moveAction(cell, true, true)
                 }
-                val cell = cellsToCheck
-                    .map { it to ArmyPF.getMeleeScore(it).score }
-                    .maxByOrNull { it.second }
-                    ?.first ?: Vec2Int()
-
-                u.id to u.moveAction(cell, true, true)
-
             }.forEach { resultActions[it.first] = it.second }
         }
         return resultActions

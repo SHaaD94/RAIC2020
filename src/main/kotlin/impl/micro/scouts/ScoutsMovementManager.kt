@@ -49,9 +49,9 @@ object ScoutsMovementManager : ActionProvider {
 
     private fun bestScoutPoint(e: Entity): Vec2Int {
         val cornersSequence = sequenceOf(
-            Vec2Int(0, 80),
-            Vec2Int(80, 80),
-            Vec2Int(80, 0)
+            Vec2Int(0, 79),
+            Vec2Int(79, 79),
+            Vec2Int(79, 0)
         )
 
         return e.cellsWithinDistance(e.visionRange())
