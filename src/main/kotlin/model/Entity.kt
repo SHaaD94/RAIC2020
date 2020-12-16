@@ -86,6 +86,7 @@ data class Entity(
     fun validCellsAround() = cellsAround(this).asSequence().filter { it.isValid() }
 
     fun cellsWithinDistance(distance: Int): Sequence<Vec2Int> = this.position.cellsWithinDistance(distance)
+    fun cellsWithDistance(distance: Int): Sequence<Vec2Int> = this.position.cellsWithDistance(distance)
 
     fun cellsCovered(): Sequence<Vec2Int> =
         this.position.cellsCovered(this.size())

@@ -12,7 +12,14 @@ object Vision {
     fun update(playerView: PlayerView) {
         visionMap.clear()
         playerView.entities.filter { it.playerId == playerView.myId }
-            .flatMap { e -> e.cellsCovered().flatMap { it.cellsWithinDistance(e.visionRange()) } }
+            .flatMap { e ->
+                e.cellsCovered().flatMap {
+                    if (currentTick() == 0)
+                        it.cellsWithinDistance(e.visionRange())
+                    else
+                        it.cellsWithDistance(e.visionRange())
+                }
+            }
             .onEach { lastVisible[it.x][it.y] = currentTick() }
             .forEach { visionMap.set(it.x * 80 + it.y) }
     }
