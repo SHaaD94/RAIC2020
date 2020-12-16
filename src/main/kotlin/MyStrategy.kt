@@ -33,7 +33,7 @@ class MyStrategy {
         CellIndex.update(playerView)
         OnceSeenEntities.update(playerView)
         WorkersPF.update(playerView)
-        ClusterManager.update(playerView)
+//        ClusterManager.update(playerView)
         ArmyPF.clearCachesAndUpdate()
 
         val resActions = mutableMapOf<Int, EntityAction>()

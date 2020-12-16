@@ -22,7 +22,7 @@ object ArmyMovementManager : ActionProvider {
             // gather at one point and defend against early aggression
             earlyGame(resultActions, mainBase)
         } else {
-            myArmy().sortedBy { Vec2Int(79,79).distance(it) }.filter { !resultActions.containsKey(it.id) }.map { u ->
+            myArmy().sortedBy { Vec2Int(79, 79).distance(it) }.filter { !resultActions.containsKey(it.id) }.map { u ->
                 if (u.enemiesWithinDistance(10).none()) {
                     val attractionPoint = enemies().minByOrNull { it.distance(u) }?.position ?: Vec2Int(40, 40)
 
@@ -56,12 +56,9 @@ object ArmyMovementManager : ActionProvider {
     private fun autoAttack(resultActions: MutableMap<Int, EntityAction>) {
         myArmy()
             .map { u ->
-                u to enemies()
-                    .map { it to it.distance(u) }
-                    .filter { (e, dist) -> dist <= u.attackRange() }
-                    .filter { it.first.health > 0 }
-                    .minByOrNull { (e, _) -> e.health }
-                    ?.first
+                u to u.enemiesWithinDistance(u.attackRange())
+                    .filter { it.health > 0 }
+                    .minByOrNull { it.health }
             }
             .filter { it.second != null }
             .forEach { (u, e) -> resultActions[u.id] = u.attackAction(e!!, autoAttack = null) }
