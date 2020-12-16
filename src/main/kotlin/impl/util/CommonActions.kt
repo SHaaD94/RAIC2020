@@ -20,3 +20,8 @@ fun Entity.moveAction(target: Vec2Int, findClosestPosition: Boolean = false, bre
     EntityAction(
         moveAction = MoveAction(target, findClosestPosition, breakThrough)
     )
+
+fun Entity.repairAction(target: Entity) =
+    EntityAction(
+        repairAction = RepairAction(target.id)
+    )

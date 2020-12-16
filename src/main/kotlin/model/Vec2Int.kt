@@ -4,6 +4,7 @@ import impl.global.State
 import impl.util.algo.distance
 import util.StreamUtil
 import java.util.*
+import kotlin.collections.HashSet
 
 data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
     companion object {
@@ -48,6 +49,18 @@ data class Vec2Int(val x: Int = 0, val y: Int = 0) : Comparable<Vec2Int> {
             if (x < this.x) yDif++ else yDif--
         }
         return res.asSequence()
+    }
+
+    fun cellsWithDistance(distance: Int): Sequence<Vec2Int> {
+        val res = HashSet<Vec2Int>()
+
+        var yDif = 0
+        for (x in this.x - distance..this.x + distance) {
+            res.add(Vec2Int(x, y - yDif))
+            res.add(Vec2Int(x, y + yDif))
+            if (x < this.x) yDif++ else yDif--
+        }
+        return res.asSequence().filter { it.isValid() }
     }
 
     fun validCellsAround() = sequenceOf(

@@ -1,18 +1,17 @@
-import debug.drawArmyPF
-import debug.globalDebugInterface
-import impl.currentTick
-import impl.global.ClusterManager
-import impl.global.State
-import impl.global.initEntityStats
+import debug.*
+import impl.global.*
 import impl.micro.TurretsActionProvider
 import impl.micro.army.ArmyMovementManager
 import impl.micro.army.ArmyPF
+import impl.micro.scouts.ScoutsMovementManager
 import impl.micro.workers.WorkersManager
 import impl.micro.workers.WorkersPF
+import impl.myWorkers
 import impl.production.buildings.BuildingProductionManager
 import impl.production.units.UnitProductionManager
 import impl.util.algo.CellIndex
 import model.Action
+import model.Color
 import model.EntityAction
 import model.PlayerView
 
@@ -21,6 +20,7 @@ class MyStrategy {
     val actionProviders = listOf(
         TurretsActionProvider,
         BuildingProductionManager,
+        ScoutsMovementManager,
         WorkersManager,
         UnitProductionManager,
         ArmyMovementManager
@@ -29,12 +29,13 @@ class MyStrategy {
     fun getAction(playerView: PlayerView, debugInterface: DebugInterface?): Action {
         val start = System.currentTimeMillis()
         globalDebugInterface = debugInterface
-//        debugInterface?.clear()
         initEntityStats(playerView)
+        Vision.update(playerView)
         State.update(playerView)
         CellIndex.update(playerView)
+        OnceSeenEntities.update(playerView)
         WorkersPF.update(playerView)
-        ClusterManager.update(playerView)
+//        ClusterManager.update(playerView)
         ArmyPF.clearCachesAndUpdate()
 
         val resActions = mutableMapOf<Int, EntityAction>()
@@ -42,18 +43,18 @@ class MyStrategy {
         actionProviders.forEach {
             it.provideActions().forEach { (u, action) ->
                 if (resActions.containsKey(u)) {
-                    println("FUCK! DUPLICATED MOVES FOR ONE UNIT")
+                    debugInterface?.let { println("FUCK! DUPLICATED MOVES FOR ONE UNIT") }
                 } else {
                     resActions[u] = action
                 }
             }
         }
 
-//        debugInterface?.drawClusters()
-//        if (currentTick() > 200) debugInterface?.drawArmyPF()
-
-        timeTotal += System.currentTimeMillis() - start
-        debugInterface?.let { println("Spent $timeTotal") }
+        val timeForTurn = System.currentTimeMillis() - start
+        timeTotal += timeForTurn
+        debugInterface?.let {
+            if (timeForTurn > 20) println("Spent total $timeTotal, current tick: $timeForTurn")
+        }
 
         return Action(resActions)
     }

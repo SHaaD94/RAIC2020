@@ -3,6 +3,7 @@ package impl.production.units
 import impl.*
 import impl.global.entityStats
 import impl.production.buildings.BuildingProductionManager
+import impl.util.algo.CellIndex
 import impl.util.algo.pathFinding.findClosestEntity
 import impl.util.algo.distance
 import impl.util.algo.pathFinding.findClosestResource
@@ -30,9 +31,14 @@ object UnitProductionManager : ActionProvider {
                 val unitToProduce = b.producingUnit()!!
                 val target: Vec2Int = when (unitToProduce) {
                     BUILDER_UNIT ->
-                        //use bfs to find closest minerals
+//                        //use bfs to find closest minerals
                         cellsAround(b).filter { !cellOccupied(it) }
-                            .mapNotNull { findClosestResource(it) }.firstOrNull()?.position
+                            .mapNotNull {
+                                if (it.entitiesWithinDistance(10).filter { it.entityType == RESOURCE }.any()) {
+                                    findClosestResource(it) { CellIndex.getUnit(it) == null }
+                                } else null
+                            }
+                            .firstOrNull()?.position
                         //if not successful find closest point of interest by distance
                             ?: BuildingProductionManager.buildingRequests.map { it.coordinate }
                                 .plus(resources().map { it.position }).minByOrNull { b.distance(it) }

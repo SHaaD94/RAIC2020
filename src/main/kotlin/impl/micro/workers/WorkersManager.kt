@@ -5,12 +5,14 @@ import impl.global.State
 import impl.production.buildings.BuildingProductionManager
 import impl.production.buildings.BuildingRequest
 import impl.util.*
+import impl.util.algo.CellIndex
 import impl.util.algo.distance
 import impl.util.algo.pathFinding.findClosestResource
 import model.*
-import kotlin.math.min
 
 object WorkersManager : ActionProvider {
+    private const val maxWorkersToRepairBuilding = 3
+
     override fun provideActions(): Map<Int, EntityAction> {
         val resultActions = mutableMapOf<Int, EntityAction>()
 
@@ -25,13 +27,14 @@ object WorkersManager : ActionProvider {
                     .find { it.id == myPlayerId() }!!.resource + currentSpendResources >= it.type.cost()
             }
             .onEach { currentSpendResources += it.type.cost() }
+            .filter { CellIndex.getUnit(it.coordinate)?.entityType != it.type }
             .map { constructBuilding(it, freeWorkers()) }
             .forEach { resultActions.putAll(it) }
 
         resultActions.putAll(repairBuildings(freeWorkers()))
 
         resultActions.putAll(
-            if (resources().isNotEmpty()) assignWorkersResources(freeWorkers()) else runTo00(
+            if (resources().any()) assignWorkersResources(freeWorkers()) else runTo00(
                 freeWorkers()
             )
         )
@@ -46,27 +49,36 @@ object WorkersManager : ActionProvider {
             !intersects(supplyPos, br.type.size(), it.position, it.size())
         }.minByOrNull { it.distance(supplyPos) } ?: return mapOf()
 
-        val existingBuilding = myBuildings(br.type).firstOrNull { it.position == br.coordinate }
-        val action = if (existingBuilding == null) {
-            constructBuilding(worker, br.type, supplyPos)
-        } else {
-            repairBuilding(worker, existingBuilding)
-        }
-
-        return mapOf(worker.id to action)
+        return mapOf(worker.id to constructBuilding(worker, br.type, supplyPos))
     }
 
     private fun repairBuildings(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> {
         val busyWorkers = mutableSetOf<Int>()
 
-        return myBuildings().filter { it.health != it.maxHP() }.flatMap { b ->
-            freeWorkers.filter { !busyWorkers.contains(it.id) }
-                .filter { it.distance(b) < 20 }
-                .sortedBy { it.distance(b) }
-                .take(min(b.maxHP() / 25, 3))
-                .onEach { busyWorkers.add(it.id) }
-                .map { it.id to repairBuilding(it, b) }
-        }.toMap()
+        val buildingRequiringRepair = myBuildings()
+            .filter { it.health != it.maxHP() }
+            .map { it to maxWorkersToRepairBuilding }
+            .toMap().toMutableMap()
+
+        val workersAlreadyRepairingBuildings = myBuildings().filter { it.health != it.maxHP() }
+            .flatMap { b ->
+                b.validCellsAround().mapNotNull { CellIndex.getUnit(it) }
+                    .filter { it.entityType == EntityType.BUILDER_UNIT }
+                    .filter { !busyWorkers.contains(it.id) }
+                    .onEach { buildingRequiringRepair[b] = buildingRequiringRepair[b]!! - 1 }
+                    .onEach { busyWorkers.add(it.id) }
+                    .map { it.id to it.repairAction(b) }
+            }.toMap()
+
+        return buildingRequiringRepair.entries.sortedBy { it.key.id }.filter { it.value > 0 }
+            .flatMap { (b, workersToGet) ->
+                freeWorkers.filter { !busyWorkers.contains(it.id) }
+                    .filter { it.distance(b) < 15 }
+                    .sortedBy { it.distance(b) }
+                    .take(workersToGet)
+                    .onEach { busyWorkers.add(it.id) }
+                    .map { it.id to moveToBuildingRepairPosition(it, b) }
+            }.toMap() + workersAlreadyRepairingBuildings
     }
 
     private fun assignWorkersResources(freeWorkers: Sequence<Entity>): Map<Int, EntityAction> {
@@ -78,9 +90,12 @@ object WorkersManager : ActionProvider {
             } else {
                 val closestResourceWithoutEnemies =
                     resources().filter { WorkersPF.getScore(it.position) >= 0 }
-                        .minByOrNull { w.distance(it) } ?: return@mapNotNull null
+                        .minByOrNull { w.distance(it) }
+                        ?: return@mapNotNull w.id to w.moveAction(
+                            Vec2Int(40, 40), true, true
+                        )
 
-                if (closestResourceWithoutEnemies.distance(w) < 10) {
+                if (currentTick() < 200 && closestResourceWithoutEnemies.distance(w) < 10) {
                     //TODO THIS MIGHT BE REDUCED LATER
                     val bestNearestResource = findClosestResource(w.position, 10) { !busyResources.contains(it) }
 
@@ -107,17 +122,14 @@ object WorkersManager : ActionProvider {
             .map { w -> w.id to w.moveAction(Vec2Int(0, 0), findClosestPosition = true, breakThrough = true) }
             .toMap()
 
-    private fun repairBuilding(worker: Entity, target: Entity): EntityAction {
+    private fun moveToBuildingRepairPosition(worker: Entity, target: Entity): EntityAction {
         val borderCells = cellsAround(target)
         // if builder is on one of them repair
-        return if (borderCells.contains(worker.position)) EntityAction(
-            repairAction = RepairAction(target.id)
-            // otherwise go to the nearest one
-        ) else worker.moveAction(
+        return worker.moveAction(
             borderCells.filter { !cellOccupied(it, worker) }.minByOrNull { it.distance(worker.position) }
             //FIXME HACK WITH DEFAULT VALUE
                 ?: target.position,
-            true,
+            false,
             true
         )
     }

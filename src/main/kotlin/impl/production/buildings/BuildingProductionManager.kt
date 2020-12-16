@@ -1,10 +1,12 @@
 package impl.production.buildings
 
 import impl.*
+import impl.global.Final
+import impl.global.Round2
+import impl.global.RoundInfo.currentRound
 import impl.global.State.availableSupply
 import impl.global.State.totalSupply
 import impl.util.algo.CellIndex
-import impl.util.cellsAround
 import impl.util.intersects
 import model.*
 import model.EntityType.*
@@ -14,47 +16,63 @@ data class BuildingRequest(val type: EntityType, var coordinate: Vec2Int)
 
 //TODO probably it is not ActionProvider anymore
 object BuildingProductionManager : ActionProvider {
+    var earlyFogOfWarBuildOrderFinished = false
     var wereInitialTurretsPlanned = false
 
     val buildingRequests = LinkedList<BuildingRequest>()
 
     override fun provideActions(): Map<Int, EntityAction> {
         monitorBuildingsRequests()
-        when {
-            !wereInitialTurretsPlanned && myWorkers().count() == 20 -> {
-                requestBuilding(TURRET, Vec2Int(4, 20))
-                requestBuilding(TURRET, Vec2Int(20, 4))
-                wereInitialTurretsPlanned = true
+        // fog of war build early order
+        if ((currentRound() == Round2 || currentRound() == Final) && currentTick() < 150 && !earlyFogOfWarBuildOrderFinished)
+            when {
+                myWorkers().count() == 5 && numbersOfBuildingsInQueue(HOUSE) < 1 -> requestBuilding(HOUSE)
+                myWorkers().count() == 10 && numbersOfBuildingsInQueue(HOUSE) < 1 -> requestBuilding(HOUSE)
+                myWorkers().count() == 12 && numbersOfBuildingsInQueue(HOUSE) < 1 -> requestBuilding(HOUSE)
+                myWorkers().count() >= 15 && numbersOfBuildingsInQueue(RANGED_BASE) < 1 -> {
+                    requestBuilding(RANGED_BASE)
+                    earlyFogOfWarBuildOrderFinished = true
+                }
             }
-            totalSupply > 80 && currentTick() % 50 == 0 -> {
-                myWorkers()
-                    .shuffled()
-                    .firstOrNull {
-                        val possibleTurretPosition = it.position - TURRET.size()
-                        possibleTurretPosition
-                            .cellsCovered(TURRET.size())
-                            .filter { CellIndex.getUnit(it) == null }.count() == TURRET.size() * 2
-                    }?.let {
-                        requestBuilding(TURRET, it.position - TURRET.size())
-                    }
-            }
+        else
+            when {
+                !wereInitialTurretsPlanned && myWorkers().count() == 20 -> {
+                    requestBuilding(TURRET, Vec2Int(4, 20))
+                    requestBuilding(TURRET, Vec2Int(20, 4))
+                    wereInitialTurretsPlanned = true
+                }
+                totalSupply > 80 && currentTick() % 50 == 0 -> {
+                    myWorkers()
+                        .shuffled()
+                        .firstOrNull {
+                            val possibleTurretPosition = it.position - TURRET.size()
+                            possibleTurretPosition
+                                .cellsCovered(TURRET.size())
+                                .filter { CellIndex.getUnit(it) == null }.count() == TURRET.size() * 2
+                        }?.let {
+                            requestBuilding(TURRET, it.position - TURRET.size())
+                        }
+                }
 
-            myBuildings(BUILDER_BASE).count() == 0 ->
-                requestBuilding(BUILDER_BASE)
-            myBuildings(RANGED_BASE).count() == 0 && myWorkers().count() > 8 ->
-                requestBuilding(RANGED_BASE)
+                myBuildings(BUILDER_BASE).count() == 0 ->
+                    requestBuilding(BUILDER_BASE)
+                myBuildings(RANGED_BASE).count() == 0 && numbersOfBuildingsInQueue(RANGED_BASE) < 1 && myWorkers().count() > 10 ->
+                    requestBuilding(RANGED_BASE)
 //            myBuildings(MELEE_BASE).count() == 0 && myWorkers().count() > 8 ->
 //                requestBuilding(MELEE_BASE)
-            totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(HOUSE) < 2 -> {
-                requestBuilding(HOUSE)
+                totalSupply < 20 && availableSupply <= 7 && numbersOfBuildingsInQueue(HOUSE) < 1 -> {
+                    requestBuilding(HOUSE)
+                }
+                totalSupply < 50 && availableSupply <= 5 && numbersOfBuildingsInQueue(HOUSE) < 2 -> {
+                    requestBuilding(HOUSE)
+                }
+                totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(HOUSE) <= 3 -> {
+                    requestBuilding(HOUSE)
+                }
+                totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(HOUSE) <= 3 -> {
+                    requestBuilding(HOUSE)
+                }
             }
-            totalSupply >= 50 && availableSupply <= 10 && numbersOfBuildingsInQueue(HOUSE) <= 3 -> {
-                requestBuilding(HOUSE)
-            }
-            totalSupply >= 100 && availableSupply <= 20 && numbersOfBuildingsInQueue(HOUSE) <= 5 -> {
-                requestBuilding(HOUSE)
-            }
-        }
         return mapOf()
     }
 

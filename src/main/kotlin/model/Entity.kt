@@ -5,6 +5,7 @@ import impl.global.entityStats
 import impl.myPlayerId
 import impl.unitTypes
 import impl.util.algo.distance
+import impl.util.cellsAround
 import util.StreamUtil
 import java.util.*
 
@@ -76,14 +77,16 @@ data class Entity(
 
     fun maxHP() = this.entityType.maxHP()
     fun attackRange() = this.entityType.attackRange()
+    fun visionRange() = this.entityType.visionRange()
     fun damage() = this.entityType.damage()
 
     fun isBuilding() = buildingTypes.contains(this.entityType)
     fun isUnit() = unitTypes.contains(this.entityType)
 
-    fun validCellsAround() = this.position.validCellsAround()
+    fun validCellsAround() = cellsAround(this).asSequence().filter { it.isValid() }
 
     fun cellsWithinDistance(distance: Int): Sequence<Vec2Int> = this.position.cellsWithinDistance(distance)
+    fun cellsWithDistance(distance: Int): Sequence<Vec2Int> = this.position.cellsWithDistance(distance)
 
     fun cellsCovered(): Sequence<Vec2Int> =
         this.position.cellsCovered(this.size())

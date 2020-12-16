@@ -1,7 +1,11 @@
 package impl.micro.army
 
+import debug.drawRoute
+import debug.globalDebugInterface
 import impl.*
+import impl.util.algo.CellIndex
 import impl.util.algo.distance
+import impl.util.algo.pathFinding.findRoute
 import impl.util.attackAction
 import impl.util.moveAction
 import model.*
@@ -18,37 +22,27 @@ object ArmyMovementManager : ActionProvider {
             // gather at one point and defend against early aggression
             earlyGame(resultActions, mainBase)
         } else {
-            myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
-                val cellsToCheck = if (u.enemiesWithinDistance(30).none()) {
-                    coarseCellsToCheck(u, 15)
-                } else if (u.enemiesWithinDistance(10).none()) {
-                    coarseCellsToCheck(u, 7)
+            myArmy().sortedBy { Vec2Int(79, 79).distance(it) }.filter { !resultActions.containsKey(it.id) }.map { u ->
+                if (u.enemiesWithinDistance(10).none()) {
+                    val attractionPoint = enemies().minByOrNull { it.distance(u) }?.position ?: Vec2Int(40, 40)
+
+                    u.id to u.moveAction(attractionPoint, true, true)
                 } else {
-                    u.cellsWithinDistance(5)
+                    val cell = u.cellsWithinDistance(1)
+                        .filter { CellIndex.getUnitForNextIndex(it)?.let { it.playerId != myPlayerId() } ?: true }
+                        .map { it to ArmyPF.getMeleeScore(it).score }
+                        .maxByOrNull { it.second }
+                        ?.let {
+                            CellIndex.setNextUnit(u.position, it.first, u)
+                            it
+                        }
+                        ?.first ?: Vec2Int()
+                    u.id to u.moveAction(cell, true, true)
                 }
-                val cell = cellsToCheck
-                    .map { it to ArmyPF.getMeleeScore(it).score }
-                    .maxByOrNull { it.second }
-                    ?.first ?: Vec2Int()
-
-                u.id to u.moveAction(cell, true, true)
-
             }.forEach { resultActions[it.first] = it.second }
         }
         return resultActions
     }
-
-    private fun coarseCellsToCheck(u: Entity, coarseDist: Int) = sequenceOf(
-        u.position,
-        u.position.copy(x = u.position.x - coarseDist),
-        u.position.copy(x = u.position.x - coarseDist, y = u.position.y + coarseDist),
-        u.position.copy(x = u.position.x + coarseDist),
-        u.position.copy(y = u.position.y + coarseDist),
-        u.position.copy(y = u.position.y - coarseDist),
-        u.position.copy(x = u.position.x + coarseDist, y = u.position.y - coarseDist),
-        u.position + coarseDist,
-        u.position - coarseDist
-    ).filter { it.isValid() }
 
     private fun earlyGame(resultActions: MutableMap<Int, EntityAction>, mainBase: Entity) {
         myArmy().filter { !resultActions.containsKey(it.id) }.mapNotNull { u ->
@@ -61,15 +55,11 @@ object ArmyMovementManager : ActionProvider {
 
     private fun autoAttack(resultActions: MutableMap<Int, EntityAction>) {
         myArmy()
-//            .filter { !ArmyPF.getMeleeScore(it.position).loosingFight }
             .map { u ->
-            u to enemies()
-                .map { it to it.distance(u) }
-                .filter { (e, dist) -> dist <= u.attackRange() }
-                .filter { it.first.health > 0 }
-                .minByOrNull { (e, _) -> e.health }
-                ?.first
-        }
+                u to u.enemiesWithinDistance(u.attackRange())
+                    .filter { it.health > 0 }
+                    .minByOrNull { it.health }
+            }
             .filter { it.second != null }
             .forEach { (u, e) -> resultActions[u.id] = u.attackAction(e!!, autoAttack = null) }
     }

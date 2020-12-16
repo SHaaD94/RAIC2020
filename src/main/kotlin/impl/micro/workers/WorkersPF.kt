@@ -26,7 +26,7 @@ object WorkersPF {
             .forEach { e ->
                 e.cellsWithinDistance(e.attackRange() + 2).forEach { c ->
 //                    if (e.attackRange() + 2 < e.distance(c)) return@forEach
-                    field[c.x][c.y] += (-e.damage() * (e.distance(c) / (e.attackRange()))).roundToInt()
+                    field[c.x][c.y] += (-e.damage() * (e.distance(c) - (e.attackRange()))).roundToInt()
                 }
             }
     }

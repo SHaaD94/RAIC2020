@@ -1,9 +1,12 @@
 package debug
 
 import DebugInterface
+import impl.enemies
 import impl.global.ClusterManager
+import impl.global.Vision
 import impl.micro.army.ArmyPF
 import impl.micro.workers.WorkersPF
+import impl.resources
 import impl.util.algo.distance
 import model.*
 import kotlin.math.roundToInt
@@ -79,8 +82,8 @@ fun DebugInterface.drawLine(v1: Vec2Int, v2: Vec2Int, c: Color) {
         DebugCommand.Add(
             DebugData.Primitives(
                 arrayOf(
-                    ColoredVertex(v1.toVecFloat(), screenOffset, c),
-                    ColoredVertex(v2.toVecFloat(), screenOffset, c)
+                    ColoredVertex(v1.toVecFloat() + 0.5F, screenOffset, c),
+                    ColoredVertex(v2.toVecFloat() + 0.5F, screenOffset, c)
                 ),
                 PrimitiveType.LINES
             )
@@ -100,7 +103,7 @@ fun DebugInterface.drawText(v1: Vec2Int, text: String, c: Color = Color(0.0F, 0F
                 ColoredVertex(v1.toVecFloat(), screenOffset, c),
                 text,
                 0.1F,
-                30F
+                15F
             )
         )
     )
@@ -124,5 +127,30 @@ fun DebugInterface.drawClusters() {
                 randomColors[i]
             )
         }
+    }
+}
+
+fun DebugInterface.drawVision() {
+    (0 until 80).forEach { x ->
+        (0 until 80).forEach { y ->
+            if (!Vision.isVisible(x, y)) {
+                this.drawSquare(x, y, 1, Color(0F, 0F, 0F, 0.8F))
+            }
+        }
+    }
+}
+
+fun DebugInterface.drawRoute(route: List<Vec2Int>) {
+    route.windowed(2).forEach { (from, to) ->
+        this.drawLine(from, to, Color(1.0F, 0F, 0F, 1F))
+    }
+}
+
+fun DebugInterface.drawEnemyAndResourceVision() {
+    enemies().forEach { e ->
+        this.drawSquare(e.position, e.size(), Color(1F, 0F, 0F, 0.9F))
+    }
+    resources().forEach { e ->
+        this.drawSquare(e.position, e.size(), Color(0F, 0.5F, 1F, 0.9F))
     }
 }
