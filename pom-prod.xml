@@ -10,8 +10,8 @@
     <name>aicup2020</name>
 
     <properties>
-        <kotlin.code.style>official</kotlin.code.style>
         <kotlin.version>1.4.20</kotlin.version>
+        <graalvm.version>20.2.0</graalvm.version>
         <main.class>Runner</main.class>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
@@ -19,27 +19,18 @@
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
-
     <dependencies>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.fasterxml.jackson.core</groupId>-->
-        <!--            <artifactId>jackson-databind</artifactId>-->
-        <!--            <version>2.11.3</version>-->
-        <!--        </dependency>-->
-
-        <dependency>                                                <!--remove-before-sending-->
-            <groupId>org.junit.jupiter</groupId>                    <!--remove-before-sending-->
-            <artifactId>junit-jupiter-engine</artifactId>           <!--remove-before-sending-->
-            <version>5.5.2</version>                                <!--remove-before-sending-->
-            <scope>test</scope>                                     <!--remove-before-sending-->
-        </dependency>                                               <!--remove-before-sending-->
-
+        <dependency>
+            <groupId>org.graalvm.sdk</groupId>
+            <artifactId>graal-sdk</artifactId>
+            <version>${graalvm.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -47,6 +38,26 @@
         <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
 
         <plugins>
+            <plugin>
+                <groupId>org.graalvm.nativeimage</groupId>
+                <artifactId>native-image-maven-plugin</artifactId>
+                <version>${graalvm.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>native-image</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <skip>false</skip>
+                    <imageName>aicup2020-native-with-dependencies</imageName>
+                    <buildArgs>
+                        --no-fallback
+                    </buildArgs>
+                </configuration>
+            </plugin>
             <plugin>
                 <artifactId>kotlin-maven-plugin</artifactId>
                 <groupId>org.jetbrains.kotlin</groupId>
