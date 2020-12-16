@@ -92,6 +92,10 @@ object ArmyPF {
                 current += score
             }
 
+        current += v.enemiesWithinDistance(5)
+            .filter { (it.health / it.maxHP()) > 0 }
+            .map { 50 / (it.health / it.maxHP()) }.sum()
+
         // -- 3. enemy attraction
         val attractionPointScore = nearestEnemyAttractionImpulse.valueForDistance(
             v.distance(enemies().minByOrNull { it.distance(v) }?.position ?: Vec2Int(30, 30))
