@@ -54,7 +54,7 @@ object ScoutsMovementManager : ActionProvider {
             Vec2Int(79, 0)
         )
 
-        return e.cellsWithinDistance(e.visionRange())
+        return e.cellsWithDistance(e.visionRange())
             .filter { WorkersPF.getScore(it) >= 0 }
             .map { v ->
                 v to v.cellsWithinDistance(e.visionRange())

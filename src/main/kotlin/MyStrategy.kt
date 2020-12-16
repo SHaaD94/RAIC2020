@@ -50,8 +50,11 @@ class MyStrategy {
             }
         }
 
-        timeTotal += System.currentTimeMillis() - start
-        debugInterface?.let { println("Spent $timeTotal") }
+        val timeForTurn = System.currentTimeMillis() - start
+        timeTotal += timeForTurn
+        debugInterface?.let {
+            if (timeForTurn > 20) println("Spent total $timeTotal, current tick: $timeForTurn")
+        }
 
         return Action(resActions)
     }

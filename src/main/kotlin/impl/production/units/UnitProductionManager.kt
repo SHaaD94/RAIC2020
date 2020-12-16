@@ -31,9 +31,13 @@ object UnitProductionManager : ActionProvider {
                 val unitToProduce = b.producingUnit()!!
                 val target: Vec2Int = when (unitToProduce) {
                     BUILDER_UNIT ->
-                        //use bfs to find closest minerals
+//                        //use bfs to find closest minerals
                         cellsAround(b).filter { !cellOccupied(it) }
-                            .mapNotNull { findClosestResource(it) { CellIndex.getUnit(it) == null } }
+                            .mapNotNull {
+                                if (it.entitiesWithinDistance(10).filter { it.entityType == RESOURCE }.any()) {
+                                    findClosestResource(it) { CellIndex.getUnit(it) == null }
+                                } else null
+                            }
                             .firstOrNull()?.position
                         //if not successful find closest point of interest by distance
                             ?: BuildingProductionManager.buildingRequests.map { it.coordinate }

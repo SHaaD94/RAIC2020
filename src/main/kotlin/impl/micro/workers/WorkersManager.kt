@@ -95,7 +95,7 @@ object WorkersManager : ActionProvider {
                             Vec2Int(40, 40), true, true
                         )
 
-                if (closestResourceWithoutEnemies.distance(w) < 10) {
+                if (currentTick() < 200 && closestResourceWithoutEnemies.distance(w) < 10) {
                     //TODO THIS MIGHT BE REDUCED LATER
                     val bestNearestResource = findClosestResource(w.position, 10) { !busyResources.contains(it) }
 
